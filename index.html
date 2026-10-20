@@ -552,12 +552,12 @@
           };
           const statusText = statusLabels[job.status] || job.status || "လက်ခံရရှိ";
           const smsBody =
-            "မင်္ဂလာပါ။ PTY-TECH တွင် သင့်စက်ကို ပြုပြင်ရန် လက်ခံရရှိပါပြီ။\n" +
-            "Job No: " + job.job_no + "\n" +
-            "Tracking Code: " + job.tracking_code + "\n" +
-            "အခြေအနေ: " + statusText + "\n" +
-            "ပြုပြင်မှုအခြေအနေ စစ်ဆေးရန်: " + trackingUrl + "\n" +
-            "Tracking စာမျက်နှာတွင် Tracking Code ကို ထည့်သွင်းစစ်ဆေးနိုင်ပါသည်။\n" +
+            "မင်္ဂလာပါ။ PTY-TECH တွင် သင့်စက်ကို ပြုပြင်ရန် လက်ခံရရှိပါပြီ။\n\n" +
+            "Job No: " + job.job_no + "\n\n" +
+            "Tracking Code:\n" + job.tracking_code + "\n\n" +
+            "အခြေအနေ: " + statusText + "\n\n" +
+            "ပြုပြင်မှုအခြေအနေ စစ်ဆေးရန်:\n" + trackingUrl + "\n" +
+            "Tracking စာမျက်နှာတွင် Tracking Code ကို ထည့်သွင်းစစ်ဆေးနိုင်ပါသည်။\n\n" +
             "PTY-TECH ကို ယုံကြည်စွာ အသုံးပြုသည့်အတွက် ကျေးဇူးတင်ပါသည်။";
 
           const smsNumber = phone.replace(/[^0-9+]/g, "");
