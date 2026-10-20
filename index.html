@@ -274,6 +274,7 @@
                 <th>ခန့်မှန်းပြီးစီးရက်</th>
                 <th>Status ပြောင်းရန်</th>
                 <th>Tracking Code</th>
+                <th>SMS ပို့ရန်</th>
               </tr>
             </thead>
             <tbody id="jobs"></tbody>
@@ -394,7 +395,7 @@
       const { data, error } = await db
         .from("repair_jobs")
         .select(
-          "job_no, customer_name, device_type, status, tracking_code, estimated_cost, received_at, estimated_completion_date"
+          "job_no, customer_name, customer_phone, device_type, status, tracking_code, estimated_cost, received_at, estimated_completion_date"
         )
         .order("received_at", { ascending: false })
         .limit(100);
@@ -517,6 +518,41 @@
         const trackingCell = document.createElement("td");
         trackingCell.textContent = job.tracking_code == null ? "" : String(job.tracking_code);
         tr.appendChild(trackingCell);
+
+        const smsCell = document.createElement("td");
+        const smsButton = document.createElement("button");
+        smsButton.type = "button";
+        smsButton.className = "status-save";
+        smsButton.textContent = "SMS App ဖွင့်ရန်";
+        smsButton.addEventListener("click", () => {
+          const phone = String(job.customer_phone || "").trim();
+          if (!phone) {
+            showMessage("ဒီ Customer အတွက် ဖုန်းနံပါတ် မရှိပါ။", true);
+            return;
+          }
+          if (!job.tracking_code) {
+            showMessage("Tracking Code မရှိသေးသောကြောင့် SMS မပြင်ဆင်နိုင်ပါ။", true);
+            return;
+          }
+
+          const trackingUrl = "https://phyothuyabusiness-mm.github.io/tech/tracking.html";
+          const smsBody =
+            "မင်္ဂလာပါ။ PTY-TECH တွင် သင့်စက်ကို ပြုပြင်ရန် လက်ခံရရှိပါပြီ။\n" +
+            "Job No: " + job.job_no + "\n" +
+            "Tracking Code: " + job.tracking_code + "\n" +
+            "အခြေအနေ: " + (job.status || "received") + "\n" +
+            "ပြုပြင်မှုအခြေအနေ စစ်ဆေးရန်: " + trackingUrl + "\n" +
+            "Tracking စာမျက်နှာတွင် Tracking Code ကို ထည့်သွင်းစစ်ဆေးနိုင်ပါသည်။\n" +
+            "PTY-TECH ကို ယုံကြည်စွာ အသုံးပြုသည့်အတွက် ကျေးဇူးတင်ပါသည်။";
+
+          const smsNumber = phone.replace(/[^0-9+]/g, "");
+          const smsUri = "sms:" + smsNumber + "?body=" + encodeURIComponent(smsBody);
+          showMessage("SMS App ကိုဖွင့်နေသည်။ စာသားနှင့် ဖုန်းနံပါတ်ကို စစ်ဆေးပြီး SMS App ထဲမှ Send ကိုနှိပ်ပါ။");
+          window.location.href = smsUri;
+        });
+
+        smsCell.appendChild(smsButton);
+        tr.appendChild(smsCell);
 
         jobsBody.appendChild(tr);
       }
