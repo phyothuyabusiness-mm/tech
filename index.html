@@ -104,6 +104,24 @@
       font-size: 13px;
     }
 
+    .status-select {
+      min-width: 165px;
+      padding: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      background: #fff;
+      color: #172033;
+      margin: 0 0 6px;
+      font: inherit;
+    }
+
+    .status-save {
+      display: block;
+      padding: 8px 10px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
     @media (max-width: 650px) {
       .grid { grid-template-columns: 1fr; }
       .card { padding: 16px; }
@@ -247,6 +265,7 @@
                 <th>Customer</th>
                 <th>စက်အမျိုးအစား</th>
                 <th>Status</th>
+                <th>Status ပြောင်းရန်</th>
                 <th>Tracking Code</th>
               </tr>
             </thead>
@@ -378,13 +397,103 @@
           job.job_no,
           job.customer_name,
           job.device_type,
-          job.status,
-          job.tracking_code
+          job.status
         ]) {
           const td = document.createElement("td");
           td.textContent = value == null ? "" : String(value);
           tr.appendChild(td);
         }
+
+        const actionCell = document.createElement("td");
+        const statusSelect = document.createElement("select");
+        statusSelect.className = "status-select";
+        statusSelect.setAttribute("aria-label", "Job No. " + job.job_no + " Status");
+
+        const statusOptions = [
+          ["received", "လက်ခံရရှိ"],
+          ["diagnosing", "စစ်ဆေးနေဆဲ"],
+          ["in_progress", "ပြုပြင်နေဆဲ"],
+          ["waiting_parts", "ပစ္စည်းစောင့်ဆိုင်းနေ"],
+          ["completed", "ပြုပြင်ပြီး"],
+          ["ready_for_pickup", "လာရောက်ယူနိုင်ပါပြီ"],
+          ["delivered", "အပ်နှံပြီး"],
+          ["cancelled", "ပယ်ဖျက်ထား"]
+        ];
+
+        for (const [value, label] of statusOptions) {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = label;
+          if (value === job.status) option.selected = true;
+          statusSelect.appendChild(option);
+        }
+
+        // Database ထဲတွင် ရှိနေသော status အသစ်/မသိသော value ကို မပျောက်စေရန်
+        if (job.status && !statusOptions.some(([value]) => value === job.status)) {
+          const currentOption = document.createElement("option");
+          currentOption.value = job.status;
+          currentOption.textContent = String(job.status) + " (လက်ရှိ)";
+          currentOption.selected = true;
+          statusSelect.appendChild(currentOption);
+        }
+
+        const saveButton = document.createElement("button");
+        saveButton.type = "button";
+        saveButton.className = "status-save";
+        saveButton.textContent = "Status သိမ်းမည်";
+        saveButton.addEventListener("click", async () => {
+          if (!db || !currentUserId) {
+            showMessage("Admin Login ပြန်ဝင်ပါ။", true);
+            return;
+          }
+
+          const newStatus = statusSelect.value;
+          if (newStatus === job.status) {
+            showMessage("Job No. " + job.job_no + " ၏ Status မပြောင်းထားပါ။");
+            return;
+          }
+
+          setButtonBusy(saveButton, true, "သိမ်းနေသည်...");
+          try {
+            const { data: updatedRows, error } = await db
+              .from("repair_jobs")
+              .update({ status: newStatus })
+              .eq("job_no", job.job_no)
+              .select("job_no, status");
+
+            if (error) {
+              throw new Error(
+                "Database Update မအောင်မြင်ပါ။ Supabase RLS UPDATE Policy ကိုစစ်ပါ။ " +
+                error.message
+              );
+            }
+
+            if (!updatedRows || updatedRows.length === 0) {
+              throw new Error(
+                "ပြောင်းလဲထားသော Row မပြန်လာပါ။ repair_jobs အတွက် UPDATE Policy နှင့် job_no ကို စစ်ပါ။"
+              );
+            }
+
+            showMessage(
+              "Job No. " + job.job_no + " Status ကို " +
+              newStatus + " သို့ ပြောင်းပြီးပါပြီ။ Customer Tracking မှာ ပြန်စစ်ပါ။"
+            );
+            await loadJobs();
+
+          } catch (error) {
+            showMessage("Status ပြောင်းမရပါ: " + error.message, true);
+          } finally {
+            setButtonBusy(saveButton, false);
+          }
+        });
+
+        actionCell.appendChild(statusSelect);
+        actionCell.appendChild(saveButton);
+        tr.appendChild(actionCell);
+
+        const trackingCell = document.createElement("td");
+        trackingCell.textContent = job.tracking_code == null ? "" : String(job.tracking_code);
+        tr.appendChild(trackingCell);
 
         jobsBody.appendChild(tr);
       }
