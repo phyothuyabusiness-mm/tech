@@ -239,6 +239,14 @@
         <span class="key">လက်ခံရရှိသည့်နေ့</span>
         <span id="receivedAt" class="value"></span>
       </div>
+      <div class="item">
+        <span class="key">ခန့်မှန်းကုန်ကျစရိတ်</span>
+        <span id="estimatedCost" class="value"></span>
+      </div>
+      <div class="item">
+        <span class="key">ခန့်မှန်းပြီးစီးမည့်ရက်</span>
+        <span id="estimatedCompletionDate" class="value"></span>
+      </div>
     </section>
 
     <p class="foot">PTY-TECH · Repair Service</p>
@@ -298,6 +306,21 @@
       document.getElementById("deviceType").textContent = "";
       document.getElementById("jobStatus").textContent = "";
       document.getElementById("receivedAt").textContent = "";
+      document.getElementById("estimatedCost").textContent = "";
+      document.getElementById("estimatedCompletionDate").textContent = "";
+    }
+
+    function formatMMK(value) {
+      const amount = Number(value);
+      if (value == null || value === "" || !Number.isFinite(amount)) return "—";
+      return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(amount) + " MMK";
+    }
+
+    function formatDate(value) {
+      if (!value) return "—";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "—";
+      return date.toLocaleDateString("my-MM", { year: "numeric", month: "short", day: "numeric" });
     }
 
     // ==========================================
@@ -447,6 +470,12 @@
 
         document.getElementById("receivedAt").textContent =
           receivedDate;
+
+        document.getElementById("estimatedCost").textContent =
+          formatMMK(job.estimated_cost);
+
+        document.getElementById("estimatedCompletionDate").textContent =
+          formatDate(job.estimated_completion_date);
 
         result.classList.remove("hidden");
 
