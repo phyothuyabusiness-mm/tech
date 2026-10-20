@@ -216,7 +216,7 @@
 
             <div>
               <label for="estimated_cost">
-                ခန့်မှန်းကုန်ကျစရိတ်
+                ခန့်မှန်းကုန်ကျစရိတ် (MMK)
               </label>
               <input
                 id="estimated_cost"
@@ -227,6 +227,10 @@
                 value="0"
                 required
               >
+            </div>
+            <div>
+              <label for="estimated_completion_date">ခန့်မှန်းပြီးစီးမည့်ရက်</label>
+              <input id="estimated_completion_date" name="estimated_completion_date" type="date">
             </div>
           </div>
 
@@ -265,6 +269,9 @@
                 <th>Customer</th>
                 <th>စက်အမျိုးအစား</th>
                 <th>Status</th>
+                <th>ခန့်မှန်းကုန်ကျစရိတ်</th>
+                <th>လက်ခံရက်</th>
+                <th>ခန့်မှန်းပြီးစီးရက်</th>
                 <th>Status ပြောင်းရန်</th>
                 <th>Tracking Code</th>
               </tr>
@@ -306,6 +313,19 @@
     function showDashboard(signedIn) {
       loginSection.classList.toggle("hidden", signedIn);
       dashboard.classList.toggle("hidden", !signedIn);
+    }
+
+    function formatMMK(value) {
+      const amount = Number(value);
+      if (value == null || value === "" || !Number.isFinite(amount)) return "—";
+      return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(amount) + " MMK";
+    }
+
+    function formatDate(value) {
+      if (!value) return "—";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "—";
+      return date.toLocaleDateString("en-GB", { year: "numeric", month: "2-digit", day: "2-digit" });
     }
 
     function setButtonBusy(button, busy, busyText) {
@@ -374,7 +394,7 @@
       const { data, error } = await db
         .from("repair_jobs")
         .select(
-          "job_no, customer_name, device_type, status, tracking_code"
+          "job_no, customer_name, device_type, status, tracking_code, estimated_cost, received_at, estimated_completion_date"
         )
         .order("received_at", { ascending: false })
         .limit(100);
@@ -397,7 +417,10 @@
           job.job_no,
           job.customer_name,
           job.device_type,
-          job.status
+          job.status,
+          formatMMK(job.estimated_cost),
+          formatDate(job.received_at),
+          formatDate(job.estimated_completion_date)
         ]) {
           const td = document.createElement("td");
           td.textContent = value == null ? "" : String(value);
@@ -583,7 +606,8 @@
               brand_model: values.brand_model.trim() || null,
               problem_description:
                 values.problem_description.trim(),
-              estimated_cost: estimatedCost
+              estimated_cost: estimatedCost,
+              estimated_completion_date: values.estimated_completion_date || null
             })
             .select("job_no, tracking_code")
             .single();
