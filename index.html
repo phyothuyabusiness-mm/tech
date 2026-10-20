@@ -175,6 +175,8 @@
         <h3>Repair Job အသစ်ထည့်ရန်</h3>
 
         <form id="jobForm">
+          <input id="edit_job_no" type="hidden" value="">
+          <p id="editNotice" class="muted hidden">Repair Job ကို ပြင်ဆင်နေသည်။</p>
           <div class="grid">
             <div>
               <label for="customer_name">Customer အမည် *</label>
@@ -244,7 +246,8 @@
             rows="3"
           ></textarea>
 
-          <button type="submit">Repair Job သိမ်းမည်</button>
+          <button id="jobSubmit" type="submit">Repair Job သိမ်းမည်</button>
+          <button id="cancelEdit" class="secondary hidden" type="button">Edit ပယ်ဖျက်မည်</button>
         </form>
       </div>
 
@@ -275,6 +278,7 @@
                 <th>Status ပြောင်းရန်</th>
                 <th>Tracking Code</th>
                 <th>SMS ပို့ရန်</th>
+                <th>Edit</th>
               </tr>
             </thead>
             <tbody id="jobs"></tbody>
@@ -395,7 +399,7 @@
       const { data, error } = await db
         .from("repair_jobs")
         .select(
-          "job_no, customer_name, customer_phone, device_type, status, tracking_code, estimated_cost, received_at, estimated_completion_date"
+          "job_no, customer_name, customer_phone, device_type, brand_model, problem_description, status, tracking_code, estimated_cost, received_at, estimated_completion_date"
         )
         .order("received_at", { ascending: false })
         .limit(100);
@@ -565,6 +569,32 @@
         smsCell.appendChild(smsButton);
         tr.appendChild(smsCell);
 
+        const editCell = document.createElement("td");
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "secondary";
+        editButton.textContent = "Edit";
+        editButton.addEventListener("click", () => {
+          const form = document.getElementById("jobForm");
+          document.getElementById("edit_job_no").value = String(job.job_no);
+          document.getElementById("customer_name").value = job.customer_name || "";
+          document.getElementById("customer_phone").value = job.customer_phone || "";
+          document.getElementById("device_type").value = job.device_type || "";
+          document.getElementById("brand_model").value = job.brand_model || "";
+          document.getElementById("estimated_cost").value = job.estimated_cost ?? 0;
+          document.getElementById("estimated_completion_date").value = job.estimated_completion_date || "";
+          document.getElementById("problem_description").value = job.problem_description || "";
+          document.getElementById("jobSubmit").textContent = "ပြင်ဆင်မှု သိမ်းမည်";
+          document.getElementById("cancelEdit").classList.remove("hidden");
+          document.getElementById("editNotice").classList.remove("hidden");
+          document.getElementById("editNotice").textContent = "Job No. " + job.job_no + " ကို ပြင်ဆင်နေသည်။ Tracking Code ကို မပြောင်းလဲပါ။";
+          form.scrollIntoView({ behavior: "smooth", block: "start" });
+          document.getElementById("customer_name").focus();
+          showMessage("Job No. " + job.job_no + " ကို ပြင်ဆင်နိုင်ပါပြီ။");
+        });
+        editCell.appendChild(editButton);
+        tr.appendChild(editCell);
+
         jobsBody.appendChild(tr);
       }
 
@@ -615,6 +645,20 @@
         }
       });
 
+    function resetJobForm() {
+      const form = document.getElementById("jobForm");
+      form.reset();
+      document.getElementById("edit_job_no").value = "";
+      document.getElementById("jobSubmit").textContent = "Repair Job သိမ်းမည်";
+      document.getElementById("cancelEdit").classList.add("hidden");
+      document.getElementById("editNotice").classList.add("hidden");
+    }
+
+    document.getElementById("cancelEdit").addEventListener("click", () => {
+      resetJobForm();
+      showMessage("Edit ပယ်ဖျက်ပြီးပါပြီ။");
+    });
+
     document
       .getElementById("jobForm")
       .addEventListener("submit", async (event) => {
@@ -644,30 +688,46 @@
             throw new Error("ကုန်ကျစရိတ်ကို မှန်ကန်စွာ ထည့်ပါ။");
           }
 
-          const { data, error } = await db
-            .from("repair_jobs")
-            .insert({
-              customer_name: values.customer_name.trim(),
-              customer_phone: values.customer_phone.trim(),
-              device_type: values.device_type.trim(),
-              brand_model: values.brand_model.trim() || null,
-              problem_description:
-                values.problem_description.trim(),
-              estimated_cost: estimatedCost,
-              estimated_completion_date: values.estimated_completion_date || null
-            })
-            .select("job_no, tracking_code")
-            .single();
+          const editJobNo = document.getElementById("edit_job_no").value;
+          const jobValues = {
+            customer_name: values.customer_name.trim(),
+            customer_phone: values.customer_phone.trim(),
+            device_type: values.device_type.trim(),
+            brand_model: values.brand_model.trim() || null,
+            problem_description: values.problem_description.trim(),
+            estimated_cost: estimatedCost,
+            estimated_completion_date: values.estimated_completion_date || null
+          };
 
-          if (error) throw error;
+          if (editJobNo) {
+            const { data, error } = await db
+              .from("repair_jobs")
+              .update(jobValues)
+              .eq("job_no", Number(editJobNo))
+              .select("job_no, tracking_code")
+              .single();
 
-          showMessage(
-            "Repair Job သိမ်းပြီးပါပြီ။\n" +
-            "Job No: " + (data.job_no ?? "") + "\n" +
-            "Tracking Code: " + (data.tracking_code ?? "")
-          );
+            if (error) throw error;
+            if (!data) throw new Error("ပြင်ဆင်ထားသော Job ကို Database မှ ပြန်မရပါ။ UPDATE Policy ကို စစ်ပါ။");
 
-          form.reset();
+            resetJobForm();
+            showMessage("Job No. " + data.job_no + " ကို ပြင်ဆင်သိမ်းဆည်းပြီးပါပြီ။ Tracking Code မပြောင်းလဲပါ။");
+          } else {
+            const { data, error } = await db
+              .from("repair_jobs")
+              .insert(jobValues)
+              .select("job_no, tracking_code")
+              .single();
+
+            if (error) throw error;
+
+            showMessage(
+              "Repair Job သိမ်းပြီးပါပြီ.\n" +
+              "Job No: " + (data.job_no ?? "") + "\n" +
+              "Tracking Code: " + (data.tracking_code ?? "")
+            );
+            form.reset();
+          }
           await loadJobs();
 
         } catch (error) {
