@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PTY-TECH | Admin Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#172033}
+header{background:#10264a;color:white;padding:20px}
+header h2{margin:0}
+main{max-width:1100px;margin:24px auto;padding:0 16px}
+.card{background:white;padding:22px;border-radius:14px;margin-bottom:20px;box-shadow:0 3px 15px #0000000b}
+h3{margin-top:0}
+input,textarea,button{font:inherit;padding:12px;border-radius:8px}
+input,textarea{width:100%;border:1px solid #cbd5e1;margin:6px 0 14px}
+button{border:0;background:#155eef;color:white;cursor:pointer}
+button:disabled{opacity:.6}
+.secondary{background:#475569}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.hidden{display:none}
+#message{white-space:pre-wrap;margin:12px 0}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px;border-bottom:1px solid #e2e8f0}
+.table-wrap{overflow-x:auto}
+@media(max-width:650px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h2>PTY-TECH</h2>
+  <div>Repair Management System</div>
+</header>
+
+<main>
+  <div id="message" role="status"></div>
+
+  <section id="login" class="card">
+    <h3>Admin Login</h3>
+    <form id="loginForm">
+      <label>Email</label>
+      <input id="email" type="email" required autocomplete="username">
+      <label>Password</label>
+      <input id="password" type="password" required
+             autocomplete="current-password">
+      <button type="submit">Login ဝင်မည်</button>
+    </form>
+  </section>
+
+  <section id="dashboard" class="hidden">
+    <div class="card">
+      <h3>Admin Dashboard</h3>
+      <p>PTY-TECH Repair Job Management</p>
+      <button id="logout" class="secondary">Logout</button>
+    </div>
+
+    <div class="card">
+      <h3>Repair Job အသစ်ထည့်ရန်</h3>
+      <form id="jobForm">
+        <div class="grid">
+          <div>
+            <label>Customer အမည် *</label>
+            <input name="customer_name" required>
+          </div>
+          <div>
+            <label>ဖုန်းနံပါတ် *</label>
+            <input name="customer_phone" required>
+          </div>
+          <div>
+            <label>စက်အမျိုးအစား *</label>
+            <input name="device_type" required
+                   placeholder="ဥပမာ - Welding Machine">
+          </div>
+          <div>
+            <label>Brand / Model</label>
+            <input name="brand_model">
+          </div>
+          <div>
+            <label>ခန့်မှန်းကုန်ကျစရိတ်</label>
+            <input name="estimated_cost" type="number"
+                   min="0" step="0.01" value="0" required>
+          </div>
+        </div>
+        <label>စက်ချို့ယွင်းချက် *</label>
+        <textarea name="problem_description" required rows="3"></textarea>
+        <button type="submit">Repair Job သိမ်းမည်</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Repair Job စာရင်း</h3>
+      <button id="refresh" class="secondary">စာရင်းပြန်ဖတ်မည်</button>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Job No.</th>
+              <th>Customer</th>
+              <th>စက်အမျိုးအစား</th>
+              <th>Status</th>
+              <th>Tracking Code</th>
+            </tr>
+          </thead>
+          <tbody id="jobs"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+const SUPABASE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
+
+const message = document.getElementById("message");
+const login = document.getElementById("login");
+const dashboard = document.getElementById("dashboard");
+const jobs = document.getElementById("jobs");
+
+let db;
+
+function showMessage(text, error = false) {
+  message.textContent = text;
+  message.style.color = error ? "#b91c1c" : "#166534";
+}
+
+function showDashboard(signedIn) {
+  login.classList.toggle("hidden", signedIn);
+  dashboard.classList.toggle("hidden", !signedIn);
+}
+
+async function checkAdmin() {
+  const { data: { user }, error } = await db.auth.getUser();
+
+  if (error || !user) {
+    showDashboard(false);
+    return;
+  }
+
+  const { data, error: roleError } = await db
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (roleError || !data) {
+    await db.auth.signOut();
+    showDashboard(false);
+    showMessage("Admin Role စစ်ဆေးမရပါ။ Database Policy ကိုစစ်ပါ။", true);
+    return;
+  }
+
+  showDashboard(true);
+  await loadJobs();
+}
+
+document.getElementById("loginForm").addEventListener("submit",
+async (event) => {
+  event.preventDefault();
+
+  const button = event.submitter;
+  button.disabled = true;
+  showMessage("Login စစ်ဆေးနေသည်...");
+
+  try {
+    const { error } = await db.auth.signInWithPassword({
+      email: document.getElementById("email").value.trim(),
+      password: document.getElementById("password").value
+    });
+
+    if (error) throw error;
+    await checkAdmin();
+    showMessage("Login အောင်မြင်ပါက Dashboard ကို အသုံးပြုနိုင်ပါပြီ။");
+  } catch (error) {
+    showMessage("Login မအောင်မြင်ပါ: " + error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+document.getElementById("jobForm").addEventListener("submit",
+async (event) => {
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+
+  try {
+    const values = Object.fromEntries(new FormData(form).entries());
+
+    const { data, error } = await db
+      .from("repair_jobs")
+      .insert({
+        customer_name: values.customer_name.trim(),
+        customer_phone: values.customer_phone.trim(),
+        device_type: values.device_type.trim(),
+        brand_model: values.brand_model.trim() || null,
+        problem_description: values.problem_description.trim(),
+        estimated_cost: Number(values.estimated_cost)
+      })
+      .select("job_no, tracking_code")
+      .single();
+
+    if (error) throw error;
+
+    showMessage(
+      "Repair Job သိမ်းပြီးပါပြီ။ Job No: " +
+      data.job_no + " | Tracking Code: " + data.tracking_code
+    );
+
+    form.reset();
+    await loadJobs();
+  } catch (error) {
+    showMessage("Job သိမ်းမရပါ: " + error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+});
+
+async function loadJobs() {
+  jobs.replaceChildren();
+
+  const { data, error } = await db
+    .from("repair_jobs")
+    .select("job_no, customer_name, device_type, status, tracking_code")
+    .order("received_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    showMessage("စာရင်းဖတ်မရပါ: " + error.message, true);
+    return;
+  }
+
+  for (const job of data || []) {
+    const tr = document.createElement("tr");
+
+    for (const value of [
+      job.job_no,
+      job.customer_name,
+      job.device_type,
+      job.status,
+      job.tracking_code
+    ]) {
+      const td = document.createElement("td");
+      td.textContent = value ?? "";
+      tr.appendChild(td);
+    }
+
+    jobs.appendChild(tr);
+  }
+}
+
+document.getElementById("refresh").addEventListener("click", loadJobs);
+
+document.getElementById("logout").addEventListener("click", async () => {
+  const { error } = await db.auth.signOut();
+  if (error) {
+    showMessage("Logout မအောင်မြင်ပါ: " + error.message, true);
+    return;
+  }
+  showDashboard(false);
+  showMessage("Logout အောင်မြင်ပါပြီ။");
+});
+
+async function start() {
+  if (
+    SUPABASE_URL.includes("https://pcwpfuyvldbojyndlwld.supabase.co/rest/v1/") ||
+    SUPABASE_KEY.includes("sb_publishable_mQnOAsZYrv2-5S9vicuotw_6inO7g8Q")
+  ) {
+    showMessage("Supabase URL နဲ့ Publishable Key ကို အရင်ဖြည့်ပါ။", true);
+    return;
+  }
+
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  await checkAdmin();
+  db.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT" || !session) {
+      showDashboard(false);
+    }
+  });
+}
+
+start();
+</script>
+</body>
+</html>
