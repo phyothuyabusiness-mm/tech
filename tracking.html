@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PTY-TECH | Repair Tracking</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:Arial,"Myanmar Text",sans-serif;background:linear-gradient(135deg,#07152e,#102f57);color:#172033;display:flex;align-items:center;justify-content:center;padding:22px}
+    .card{width:100%;max-width:520px;background:#fff;border-radius:20px;padding:28px;box-shadow:0 20px 55px #0005}
+    .brand{text-align:center;margin-bottom:24px}
+    .logo{width:58px;height:58px;border-radius:16px;background:#0d2c54;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;letter-spacing:1px}
+    h1{font-size:25px;margin:14px 0 6px;color:#0d2c54}
+    .sub{color:#68758a;font-size:14px;line-height:1.7;margin:0}
+    label{display:block;font-weight:700;margin:20px 0 8px}
+    input{width:100%;padding:14px 15px;border:1px solid #cbd5e1;border-radius:10px;font-size:16px;outline:none}
+    input:focus{border-color:#2463eb;box-shadow:0 0 0 3px #2463eb20}
+    button{width:100%;margin-top:12px;border:0;border-radius:10px;padding:14px;background:#1763d1;color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+    button:disabled{opacity:.65;cursor:wait}
+    #message{margin-top:16px;font-size:14px;line-height:1.7}
+    .result{margin-top:18px;border:1px solid #dce5f0;border-radius:14px;overflow:hidden}
+    .result h2{margin:0;background:#edf4ff;padding:14px 16px;font-size:17px;color:#0d2c54}
+    .item{display:flex;justify-content:space-between;gap:14px;padding:13px 16px;border-top:1px solid #e7edf4}
+    .key{color:#68758a}.value{font-weight:700;text-align:right;overflow-wrap:anywhere}
+    .status{display:inline-block;border-radius:20px;background:#e6f7ed;color:#14733d;padding:5px 10px;font-size:13px}
+    .foot{text-align:center;color:#788397;font-size:12px;margin-top:22px}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <header class="brand">
+      <div class="logo">PTY</div>
+      <h1>Repair Job Tracking</h1>
+      <p class="sub">ပြုပြင်ရေးအလုပ်အခြေအနေကို Tracking Code ဖြင့် စစ်ဆေးနိုင်ပါသည်။</p>
+    </header>
+    <form id="trackingForm">
+      <label for="trackingCode">Tracking Code</label>
+      <input id="trackingCode" name="trackingCode" type="text" placeholder="ဥပမာ - 15179556B6" autocomplete="off" required maxlength="100">
+      <button id="submitButton" type="submit">အခြေအနေ စစ်ဆေးမည်</button>
+    </form>
+    <div id="message" role="status" aria-live="polite"></div>
+    <section id="result" class="result hidden" aria-live="polite">
+      <h2>Repair Job အချက်အလက်</h2>
+      <div class="item"><span class="key">Job No.</span><span id="jobNo" class="value"></span></div>
+      <div class="item"><span class="key">စက်အမျိုးအစား</span><span id="deviceType" class="value"></span></div>
+      <div class="item"><span class="key">အခြေအနေ</span><span id="jobStatus" class="value"></span></div>
+      <div class="item"><span class="key">လက်ခံရရှိသည့်နေ့</span><span id="receivedAt" class="value"></span></div>
+    </section>
+    <p class="foot">PTY-TECH · Repair Service</p>
+  </main>
+  <script>
+    const SUPABASE_URL = "https://pcwpfuyvldbojyndlwld.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_mQnOAsZYrv2-5S9vicuotw_6inO7gQ";
+    const form = document.getElementById("trackingForm");
+    const button = document.getElementById("submitButton");
+    const message = document.getElementById("message");
+    const result = document.getElementById("result");
+
+    const statusLabels = {
+      received: "လက်ခံရရှိ",
+      diagnosing: "စစ်ဆေးနေဆဲ",
+      in_progress: "ပြုပြင်နေဆဲ",
+      waiting_parts: "ပစ္စည်းစောင့်ဆိုင်းနေ",
+      completed: "ပြုပြင်ပြီး",
+      ready_for_pickup: "လာရောက်ယူနိုင်ပါပြီ",
+      delivered: "အပ်နှံပြီး",
+      cancelled: "ပယ်ဖျက်ထား"
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const trackingCode = document.getElementById("trackingCode").value.trim();
+      if (!trackingCode) return;
+
+      button.disabled = true;
+      button.textContent = "စစ်ဆေးနေပါသည်…";
+      message.textContent = "";
+      result.classList.add("hidden");
+
+      try {
+        const response = await fetch(SUPABASE_URL + "/rest/v1/rpc/track_repair_job", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
+            "Authorization": "Bearer " + SUPABASE_PUBLISHABLE_KEY
+          },
+          body: JSON.stringify({ p_tracking_code: trackingCode })
+        });
+
+        if (!response.ok) {
+          throw new Error("API_ERROR_" + response.status);
+        }
+
+        const rows = await response.json();
+        if (!Array.isArray(rows) || rows.length === 0) {
+          message.textContent = "ဒီ Tracking Code ကို မတွေ့ပါ။ Code ကို ပြန်စစ်ပြီး ထပ်ကြိုးစားပါ။";
+          message.style.color = "#b42318";
+          return;
+        }
+
+        const job = rows[0];
+        document.getElementById("jobNo").textContent = job.job_no ?? "—";
+        document.getElementById("deviceType").textContent = job.device_type || "—";
+        document.getElementById("jobStatus").innerHTML = "";
+        const status = document.createElement("span");
+        status.className = "status";
+        status.textContent = statusLabels[job.status] || job.status || "အခြေအနေ မသတ်မှတ်ရသေး";
+        document.getElementById("jobStatus").appendChild(status);
+        document.getElementById("receivedAt").textContent = job.received_at
+          ? new Date(job.received_at).toLocaleDateString("my-MM", { year: "numeric", month: "short", day: "numeric" })
+          : "—";
+        result.classList.remove("hidden");
+        message.textContent = "အလုပ်အချက်အလက်ကို တွေ့ရှိပါသည်။";
+        message.style.color = "#14733d";
+      } catch (error) {
+        message.textContent = "ဆက်သွယ်မှု အမှားရှိနေပါသည်။ Supabase URL၊ Publishable Key နှင့် Function ခွင့်ပြုချက်ကို စစ်ဆေးပါ။ (အမှားကုဒ်: " + (error.message || "unknown") + ")";
+        message.style.color = "#b42318";
+      } finally {
+        button.disabled = false;
+        button.textContent = "အခြေအနေ စစ်ဆေးမည်";
+      }
+    });
+  </script>
+</body>
+</html>
