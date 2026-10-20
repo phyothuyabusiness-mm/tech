@@ -90,7 +90,8 @@
         });
 
         if (!response.ok) {
-          throw new Error("API_ERROR_" + response.status);
+          const details = await response.text();
+          throw new Error("API_ERROR_" + response.status + (details ? ": " + details.slice(0, 240) : ""));
         }
 
         const rows = await response.json();
