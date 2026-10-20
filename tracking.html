@@ -37,6 +37,11 @@
     .item { display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;border-top:1px solid #edf1f6; } .item:first-of-type { border-top:0; }
     .key { color:var(--muted);font-size:13px;flex-shrink:0; } .value { font-weight:750;font-size:14px;text-align:right;overflow-wrap:anywhere; }
     .status { display:inline-block;border-radius:99px;background:#e6f7ed;color:#14733d;padding:7px 12px;font-size:12px;font-weight:800;border:1px solid #c8ecd5; }
+    .tracking-code-row { align-items:center; }
+    .tracking-code-actions { display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0; }
+    .tracking-code-text { font-weight:850;font-size:14px;letter-spacing:.5px;overflow-wrap:anywhere; }
+    .copy-btn { width:auto;margin:0;padding:9px 12px;border-radius:9px;font-size:12px;white-space:nowrap;box-shadow:none;background:linear-gradient(100deg,#0c8152,#096641); }
+    .copy-btn:hover { box-shadow:0 5px 12px #09664126; }
     .foot { text-align:center;color:#8793a5;font-size:11px;margin:24px 0 0;letter-spacing:.2px; } .hidden { display:none !important; }
     @media (max-width:420px) { body { padding:14px 10px;align-items:flex-start; } .card { padding:22px 17px;border-radius:22px;margin:10px 0; } form { padding:16px; } .item { gap:12px;padding:13px 14px; } .key,.value { font-size:12px; } .result h2 { padding:15px 14px; } }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms !important;transition-duration:.01ms !important; } }
@@ -77,6 +82,14 @@
 
     <section id="result" class="result hidden" aria-live="polite">
       <h2>Repair Job အချက်အလက်</h2>
+
+      <div class="item tracking-code-row">
+        <span class="key">Tracking Code</span>
+        <div class="tracking-code-actions">
+          <span id="trackingCodeValue" class="tracking-code-text"></span>
+          <button id="copyTrackingCodeButton" class="copy-btn" type="button">Copy ကူးမည်</button>
+        </div>
+      </div>
 
       <div class="item">
         <span class="key">Job No.</span>
@@ -132,6 +145,8 @@
     const button = document.getElementById("submitButton");
     const message = document.getElementById("message");
     const result = document.getElementById("result");
+    const copyTrackingCodeButton = document.getElementById("copyTrackingCodeButton");
+    const trackingCodeValue = document.getElementById("trackingCodeValue");
 
     // ==========================================
     // STATUS LABELS
@@ -180,6 +195,40 @@
       if (Number.isNaN(date.getTime())) return "—";
       return date.toLocaleDateString("my-MM", { year: "numeric", month: "short", day: "numeric" });
     }
+
+    // ==========================================
+    // COPY TRACKING CODE
+    // ==========================================
+
+    copyTrackingCodeButton.addEventListener("click", async function () {
+      const code = trackingCodeValue.textContent.trim();
+      if (!code) return;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(code);
+        } else {
+          const temp = document.createElement("textarea");
+          temp.value = code;
+          temp.setAttribute("readonly", "");
+          temp.style.position = "fixed";
+          temp.style.opacity = "0";
+          document.body.appendChild(temp);
+          temp.select();
+          const copied = document.execCommand("copy");
+          temp.remove();
+          if (!copied) throw new Error("Copy failed");
+        }
+
+        copyTrackingCodeButton.textContent = "ကူးပြီးပါပြီ ✓";
+        showMessage("Tracking Code ကို Copy ကူးပြီးပါပြီ။", "#14733d");
+        window.setTimeout(() => {
+          copyTrackingCodeButton.textContent = "Copy ကူးမည်";
+        }, 1800);
+      } catch (error) {
+        showMessage("Copy မအောင်မြင်ပါ။ Tracking Code ကို ဖိထားပြီး ကိုယ်တိုင် Copy ကူးပါ။", "#b42318");
+      }
+    });
 
     // ==========================================
     // TRACKING FORM
@@ -294,6 +343,9 @@
         const job = rows[0];
 
         // Display job information safely
+        trackingCodeValue.textContent = trackingCode;
+        copyTrackingCodeButton.textContent = "Copy ကူးမည်";
+
         document.getElementById("jobNo").textContent =
           job.job_no ?? "—";
 
