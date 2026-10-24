@@ -8,131 +8,89 @@
   <title>PTY-TECH | Admin Dashboard</title>
 
   <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
-      color: #172033;
-    }
-
-    header {
-      background: #10264a;
-      color: white;
-      padding: 20px;
-    }
-
-    header h2 { margin: 0 0 5px; }
-
-    main {
-      max-width: 1100px;
-      margin: 24px auto;
-      padding: 0 16px;
-    }
-
-    .card {
-      background: white;
-      padding: 22px;
-      border-radius: 14px;
-      margin-bottom: 20px;
-      box-shadow: 0 3px 15px #0000000b;
-    }
-
-    h3 { margin-top: 0; }
-
-    input, textarea, button {
-      font: inherit;
-      padding: 12px;
-      border-radius: 8px;
-    }
-
-    input, textarea {
-      width: 100%;
-      border: 1px solid #cbd5e1;
-      margin: 6px 0 14px;
-      background: white;
-      color: #172033;
-    }
-
-    button {
-      border: 0;
-      background: #155eef;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: .6;
-      cursor: wait;
-    }
-
-    .secondary { background: #475569; }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .hidden { display: none !important; }
-
-    #message {
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      margin: 12px 0;
-    }
-
-    .table-wrap { overflow-x: auto; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 650px;
-    }
-
-    th, td {
-      text-align: left;
-      padding: 10px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    th { background: #f8fafc; }
-
-    .muted {
-      color: #64748b;
-      font-size: 13px;
-    }
-
-    .status-select {
-      min-width: 165px;
-      padding: 8px;
-      border: 1px solid #cbd5e1;
-      border-radius: 7px;
-      background: #fff;
-      color: #172033;
-      margin: 0 0 6px;
-      font: inherit;
-    }
-
-    .status-save {
-      display: block;
-      padding: 8px 10px;
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    @media (max-width: 650px) {
-      .grid { grid-template-columns: 1fr; }
-      .card { padding: 16px; }
-    }
-  </style>
+:root{color-scheme:dark;--bg:#080d18;--panel:#111a2b;--panel2:#151f33;--line:#26344c;--text:#edf3ff;--muted:#92a2bc;--violet:#8b7cff;--cyan:#49c5e8;--green:#35d39a;--red:#ff7285;--amber:#f3bd5c}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{margin:0;min-height:100vh;font-family:Inter,"Noto Sans Myanmar","Myanmar Text",system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 10% 0%,#4e3a9b22,transparent 35%),radial-gradient(ellipse at 95% 20%,#168bb318,transparent 32%),var(--bg);color:var(--text)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.14;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(to bottom,#000,transparent 85%)}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px clamp(16px,4vw,42px);background:#0a1020eF;border-bottom:1px solid #26334b;backdrop-filter:blur(18px)}
+.brand-lockup{display:flex;align-items:center;gap:12px}
+.brand-mark{width:43px;height:43px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(140deg,#8c7bff,#4c45bd 60%,#1f9cc1);font-weight:900;letter-spacing:.5px;color:white;box-shadow:0 8px 25px #635bdf44}
+header h2{margin:0;font-size:17px;letter-spacing:1.5px}
+header .subbrand{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.8px}
+.header-pill{display:flex;align-items:center;gap:8px;color:#c8d4e9;background:#121c30;border:1px solid #2a3852;padding:9px 12px;border-radius:999px;font-size:12px}
+main{width:min(1500px,100%);margin:0 auto;padding:clamp(16px,3vw,36px)}
+#message{white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 16px;padding:0;font-size:13px;line-height:1.8}
+#message:not(:empty){padding:13px 16px;border:1px solid #34445e;background:#101a2b;border-radius:13px}
+.card{min-width:0;background:linear-gradient(145deg,#131d30f5,#101827f5);border:1px solid var(--line);padding:clamp(18px,2.5vw,28px);border-radius:22px;margin-bottom:20px;box-shadow:0 18px 55px #00000018}
+h3{margin:0 0 8px;font-size:18px;letter-spacing:-.3px}
+p{line-height:1.7}
+.muted{color:var(--muted);font-size:12px}
+#login{max-width:480px;margin:7vh auto;padding:clamp(24px,5vw,38px);border-radius:26px;background:linear-gradient(145deg,#151f34,#101827);box-shadow:0 28px 90px #0007}
+#login:before{content:"SECURE WORKSPACE  /  ADMIN ACCESS";display:block;color:#9d92ff;font-size:10px;font-weight:800;letter-spacing:2px;margin-bottom:18px}
+#login h3{font-size:25px;margin-bottom:8px}
+#login form{margin-top:24px}
+label{display:block;color:#c5d0e3;font-size:12px;font-weight:700;margin:0 0 8px}
+input,textarea,select,button{font:inherit}
+input,textarea,select{width:100%;min-width:0;padding:12px 14px;border:1px solid #2b3a53;border-radius:11px;background:#0b1322;color:var(--text);outline:none;transition:border-color .18s,box-shadow .18s}
+input,textarea{margin:6px 0 16px}
+input:focus,textarea:focus,select:focus{border-color:#8275ff;box-shadow:0 0 0 3px #8275ff22}
+input::placeholder,textarea::placeholder{color:#667792}
+button{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:11px;padding:11px 15px;background:linear-gradient(110deg,#8171ff,#5e56d9);color:#fff;font-weight:750;font-size:12px;cursor:pointer;transition:transform .16s,filter .16s,border-color .16s;white-space:nowrap}
+button:hover{filter:brightness(1.1);transform:translateY(-1px)}
+button:disabled{opacity:.55;cursor:wait;transform:none}
+button.secondary{background:#17243a;border-color:#33445f;color:#dbe6fa}
+button.danger{background:#351c2a;border-color:#663044;color:#ffb7c2}
+.hidden{display:none!important}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+#dashboard>.card:first-child{position:relative;overflow:hidden;background:linear-gradient(110deg,#1a2040,#17243b 65%,#113344);border-color:#394267;padding:clamp(22px,3vw,34px)}
+#dashboard>.card:first-child:after{content:"";position:absolute;width:230px;height:230px;right:-70px;top:-125px;border:1px solid #ffffff17;border-radius:50%;box-shadow:0 0 0 28px #ffffff05,0 0 0 60px #ffffff04}
+#dashboard>.card:first-child h3{font-size:clamp(23px,3vw,32px);letter-spacing:-1px}
+#dashboard>.card:first-child p{color:#aab9d2;margin:8px 0 18px}
+#logout{position:relative;z-index:1}
+#dashboard>.card:nth-of-type(2){background:linear-gradient(145deg,#121d30,#101827)}
+#jobForm .grid>div{min-width:0}
+#jobSubmit{margin-right:8px}
+#jobCount{display:inline-flex;align-items:center;min-height:36px;margin:10px 0;color:#aebbd0;background:#0b1423;border:1px solid #283750;border-radius:10px;padding:8px 12px}
+.table-wrap{overflow:auto;border:1px solid #28364e;border-radius:14px;margin-top:10px}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:1180px;font-size:12px}
+th,td{text-align:left;padding:13px 12px;border-bottom:1px solid #243148;vertical-align:middle}
+th{position:sticky;top:0;background:#172238;color:#aebcda;font-size:10px;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap}
+td{color:#dce5f5}
+tbody tr{background:#111b2c;transition:background .15s}
+tbody tr:nth-child(even){background:#121e31}
+tbody tr:hover{background:#1b2941}
+tbody tr:last-child td{border-bottom:0}
+.status-select{min-width:170px;padding:9px;border:1px solid #344560;border-radius:9px;background:#0b1423;color:#e7eeff;margin:0 0 6px;font-size:12px}
+.status-save{display:block;padding:9px 11px;font-size:11px}
+td button.secondary{padding:9px 11px}
+#jobForm{margin-top:20px}
+#editNotice{padding:10px 12px;border-radius:9px;background:#282345;color:#cfc8ff}
+input[type=date]{color-scheme:dark}
+#dashboard>.card:nth-of-type(3) h3{display:flex;align-items:center;gap:10px}
+#dashboard>.card:nth-of-type(3) h3:before{content:"";width:4px;height:22px;border-radius:8px;background:linear-gradient(#9a8cff,#48c8e8)}
+.module-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 20px}
+.module-tile{border:1px solid #293751;border-radius:16px;padding:17px;background:linear-gradient(145deg,#141f33,#101827);min-width:0}
+.module-tile .tile-icon{width:35px;height:35px;border-radius:11px;display:grid;place-items:center;background:#28254c;color:#b9b0ff;margin-bottom:13px;font-size:16px}
+.module-tile strong{display:block;font-size:20px;letter-spacing:-.5px}
+.module-tile span{display:block;color:#92a2bc;font-size:11px;margin-top:5px}
+.workspace-nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.workspace-nav a{color:#aebbd2;text-decoration:none;border:1px solid #293751;background:#111a2a;border-radius:10px;padding:10px 13px;font-size:12px}
+.workspace-nav a:hover{border-color:#8275ff;color:#fff;background:#1c2440}
+.module-note{border:1px dashed #3a4965;background:#111a2a;border-radius:15px;padding:18px;color:#aebbd2;font-size:12px;line-height:1.8}
+@media(max-width:850px){main{padding:18px 14px}.module-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.table-wrap{border-radius:12px}.card{border-radius:18px}}
+@media(max-width:560px){header{padding:12px 14px}.brand-mark{width:38px;height:38px;border-radius:12px}header h2{font-size:15px}.header-pill{font-size:10px;padding:8px}.header-pill .desktop-label{display:none}main{padding:13px 10px}.card{padding:17px;margin-bottom:14px;border-radius:16px}.grid{grid-template-columns:1fr;gap:0}.module-strip{gap:9px}.module-tile{padding:13px;border-radius:13px}.module-tile strong{font-size:18px}.workspace-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-nav a{text-align:center;padding:11px 6px}button{white-space:normal}#jobSubmit{margin-bottom:8px}#dashboard>.card:first-child{padding:22px 18px}#login{margin:4vh auto;padding:23px 18px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+</style>
 </head>
 
 <body>
   <header>
-    <h2>PTY-TECH</h2>
-    <div>Repair Management System</div>
+    <div class="brand-lockup">
+      <div class="brand-mark">PTY</div>
+      <div><h2>PTY-TECH</h2><div class="subbrand">REPAIR INTELLIGENCE · MANAGEMENT SYSTEM</div></div>
+    </div>
+    <div class="header-pill"><span style="color:#35d39a">●</span><span class="desktop-label">Secure Workspace</span><span>MM / EN</span></div>
   </header>
 
   <main>
@@ -171,6 +129,41 @@
         </button>
       </div>
 
+      <div class="module-strip" aria-label="Workspace overview">
+        <div class="module-tile"><div class="tile-icon">▦</div><strong id="metricTotal">—</strong><span>Total Repair Jobs · စုစုပေါင်း</span></div>
+        <div class="module-tile"><div class="tile-icon">◷</div><strong id="metricActive">—</strong><span>In Progress · လုပ်ဆောင်ဆဲ</span></div>
+        <div class="module-tile"><div class="tile-icon">✓</div><strong id="metricCompleted">—</strong><span>Completed · ပြုပြင်ပြီး</span></div>
+        <div class="module-tile"><div class="tile-icon">▤</div><strong id="metricValue">—</strong><span>Estimated Value · ခန့်မှန်းတန်ဖိုး</span></div>
+      </div>
+      <nav class="workspace-nav" aria-label="Workspace sections">
+        <a href="#dashboard">◈ Overview · ပင်မ</a>
+        <a href="#jobList">▦ Repair Jobs · အလုပ်စာရင်း</a>
+        <a href="#jobForm">＋ New / Edit Job · အလုပ်ထည့်ရန်</a>
+        <a href="#customersModule">♙ Customers · ဖောက်သည်များ</a>
+        <a href="#inventoryModule">▣ Inventory · ပစ္စည်းစာရင်း</a>
+        <a href="#reportsModule">▥ Reports · အစီရင်ခံစာ</a>
+      </nav>
+      <div class="card" id="customersModule">
+        <h3>♙ Customers · ဖောက်သည်များ</h3>
+        <p class="muted">Customer စာရင်းကို Repair Jobs ထဲရှိ customer အချက်အလက်များမှ စုစည်းကြည့်ရှုနိုင်ရန်။</p>
+        <div class="module-note">Customer အချက်အလက်များကို လက်ရှိ repair_jobs မှသာ ပြသမည်။ သီးခြား Customer Database မရှိသေးသဖြင့် ဒီဇိုင်းအဆင့်တွင် အချက်အလက်အသစ် မဖန်တီးထားပါ။ Job list ထဲရှိ Customer အမည်/ဖုန်းဖြင့် ရှာနိုင်ပါသည်။</div>
+      </div>
+      <div class="card" id="inventoryModule">
+        <h3>▣ Inventory · Spare Parts</h3>
+        <p class="muted">Spare parts, stock quantity, minimum stock, purchase cost နှင့် stock movement စီမံခန့်ခွဲမှု။</p>
+        <div class="module-note">Inventory ကို အမှန်တကယ်အသုံးပြုရန် Supabase တွင် inventory_items နှင့် stock_movements table များ၊ RLS policies နှင့် လုပ်ဆောင်ချက်များကို ထပ်တိုးရန်လိုအပ်သည်။ လက်ရှိ Database ကို မပြောင်းဘဲထားထားပြီး stock အတုအယောင် မပြသထားပါ။</div>
+      </div>
+      <div class="card" id="reportsModule">
+        <h3>▥ Reports & Analytics · အစီရင်ခံစာ</h3>
+        <p class="muted">အောက်ပါ Summary များကို လက်ရှိ Repair Job စာရင်းမှ အလိုအလျောက်တွက်ချက်မည်။</p>
+        <div class="module-strip">
+          <div class="module-tile"><div class="tile-icon">₭</div><strong id="reportEstimated">—</strong><span>Estimated Cost · ခန့်မှန်းစရိတ်</span></div>
+          <div class="module-tile"><div class="tile-icon">✓</div><strong id="reportDelivered">—</strong><span>Delivered · အပ်နှံပြီး</span></div>
+          <div class="module-tile"><div class="tile-icon">◷</div><strong id="reportPending">—</strong><span>Pending · ဆောင်ရွက်ဆဲ</span></div>
+          <div class="module-tile"><div class="tile-icon">♙</div><strong id="reportCustomers">—</strong><span>Unique Customers · ဖောက်သည်</span></div>
+        </div>
+        <p class="muted">မှတ်ချက်: Estimated Cost သည် အမှန်တကယ်ရရှိငွေ (Revenue) သို့မဟုတ် အမြတ်မဟုတ်ပါ။</p>
+      </div>
       <div class="card">
         <h3>Repair Job အသစ်ထည့်ရန်</h3>
 
@@ -251,8 +244,8 @@
         </form>
       </div>
 
-      <div class="card">
-        <h3>Repair Job စာရင်း</h3>
+      <div class="card" id="jobList">
+        <h3>Repair Job စာရင်း · Repair Jobs</h3>
 
         <button
           id="refresh"
@@ -263,6 +256,8 @@
         </button>
 
         <p id="jobCount" class="muted"></p>
+        <label for="jobSearch">Search Jobs / Customers · ရှာဖွေရန်</label>
+        <input id="jobSearch" type="search" placeholder="Job No, Tracking Code, Customer, Phone, Device..." autocomplete="off">
 
         <div class="table-wrap">
           <table>
@@ -414,7 +409,20 @@
       }
 
       const rows = data || [];
-
+      const activeStatuses = ["received","diagnosing","in_progress","waiting_parts","ready_for_pickup"];
+      const completedCount = rows.filter(job => ["completed","delivered"].includes(job.status)).length;
+      const activeCount = rows.filter(job => activeStatuses.includes(job.status)).length;
+      const totalEstimate = rows.reduce((sum, job) => sum + (Number(job.estimated_cost) || 0), 0);
+      const uniqueCustomers = new Set(rows.map(job => String(job.customer_phone || job.customer_name || "").trim().toLowerCase()).filter(Boolean)).size;
+      const metric = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+      metric("metricTotal", rows.length);
+      metric("metricActive", activeCount);
+      metric("metricCompleted", completedCount);
+      metric("metricValue", formatMMK(totalEstimate));
+      metric("reportEstimated", formatMMK(totalEstimate));
+      metric("reportDelivered", rows.filter(job => job.status === "delivered").length);
+      metric("reportPending", activeCount);
+      metric("reportCustomers", uniqueCustomers);
       for (const job of rows) {
         const tr = document.createElement("tr");
 
@@ -739,6 +747,17 @@
           setButtonBusy(button, false);
         }
       });
+
+
+    const jobSearchInput = document.getElementById("jobSearch");
+    if (jobSearchInput) {
+      jobSearchInput.addEventListener("input", () => {
+        const query = jobSearchInput.value.trim().toLowerCase();
+        for (const row of jobsBody.querySelectorAll("tr")) {
+          row.hidden = query !== "" && !row.textContent.toLowerCase().includes(query);
+        }
+      });
+    }
 
     document
       .getElementById("refresh")
