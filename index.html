@@ -650,26 +650,36 @@ tbody tr:hover{background:#f4f7ff}
         total: items.reduce((sum,item) => sum + item.amount, 0)
       };
     }
+    async function persistVoucherToHistory() {
+      if (!db || !currentUserId) throw new Error("ဘောင်ချာသိမ်းရန် Admin Login ဝင်ပါ။");
+      const v = getVoucherSnapshot();
+      if (!v.customer_name) { document.getElementById("voucherCustomer").focus(); throw new Error("Customer အမည် ဖြည့်ပါ။"); }
+      if (!v.items.length) throw new Error("ဘောင်ချာတွင် Item / Service အနည်းဆုံးတစ်ခု ဖြည့်ပါ။");
+      if (!v.voucher_no) { v.voucher_no = "V-" + Date.now().toString().slice(-8); document.getElementById("voucherNumber").value = v.voucher_no; }
+      const {data:existing,error:lookupError}=await db.from("repair_vouchers").select("id").eq("voucher_no",v.voucher_no).limit(1);
+      if (lookupError) throw lookupError;
+      if (existing?.length) {
+        await loadVoucherHistory();
+        return {voucher:v,alreadySaved:true};
+      }
+      const {error}=await db.from("repair_vouchers").insert({
+        voucher_no:v.voucher_no, voucher_date:v.voucher_date, customer_name:v.customer_name,
+        customer_phone:v.customer_phone, customer_address:v.customer_address,
+        repair_job_no:v.job_no ? Number(v.job_no) : null, repair_job_id:v.job_id, tracking_code:v.tracking_code,
+        device:v.device, problem:v.problem, items:v.items, total_amount:v.total, created_by:currentUserId
+      });
+      if (error) throw error;
+      await loadVoucherHistory();
+      return {voucher:v,alreadySaved:false};
+    }
     document.getElementById("saveVoucher")?.addEventListener("click", async () => {
       const button = document.getElementById("saveVoucher");
-      if (!db || !currentUserId) { showMessage("ဘောင်ချာသိမ်းရန် Admin Login ဝင်ပါ။", true); return; }
-      const v = getVoucherSnapshot();
-      if (!v.customer_name) { showMessage("ဘောင်ချာသိမ်းရန် Customer အမည် ဖြည့်ပါ။", true); document.getElementById("voucherCustomer").focus(); return; }
-      if (!v.items.length) { showMessage("ဘောင်ချာတွင် Item / Service အနည်းဆုံးတစ်ခု ဖြည့်ပါ။", true); return; }
-      if (!v.voucher_no) { v.voucher_no = "V-" + Date.now().toString().slice(-8); document.getElementById("voucherNumber").value = v.voucher_no; }
       setButtonBusy(button, true, "သိမ်းနေသည်...");
       try {
-        const {data,error} = await db.from("repair_vouchers").insert({
-          voucher_no:v.voucher_no, voucher_date:v.voucher_date, customer_name:v.customer_name,
-          customer_phone:v.customer_phone, customer_address:v.customer_address,
-          repair_job_no:v.job_no ? Number(v.job_no) : null, repair_job_id:v.job_id, tracking_code:v.tracking_code,
-          device:v.device, problem:v.problem, items:v.items, total_amount:v.total, created_by:currentUserId
-        }).select("id").single();
-        if (error) throw error;
-        showMessage("ဘောင်ချာ " + v.voucher_no + " ကို History ထဲ သိမ်းပြီးပါပြီ။");
-        await loadVoucherHistory();
+        const result=await persistVoucherToHistory();
+        showMessage("ဘောင်ချာ " + result.voucher.voucher_no + (result.alreadySaved ? " သည် History ထဲ ရှိပြီးသားပါ။" : " ကို History ထဲ သိမ်းပြီးပါပြီ။"));
       } catch (error) {
-        showMessage("ဘောင်ချာသိမ်းမရပါ။ Supabase SQL Table/RLS ကို စစ်ပါ။ " + error.message, true);
+        showMessage("ဘောင်ချာသိမ်းမရပါ။ " + error.message, true);
       } finally { setButtonBusy(button, false); }
     });
     function renderVoucherHistory(rows) {
@@ -748,6 +758,7 @@ tbody tr:hover{background:#f4f7ff}
       if (!area) return;
       setButtonBusy(button, true, "PDF ပြုလုပ်နေသည်...");
       try {
+        const saved=await persistVoucherToHistory();
         const loadScript = (src) => new Promise((resolve, reject) => {
           const existing = [...document.scripts].find(s => s.src === src);
           if (existing) {
@@ -775,7 +786,7 @@ tbody tr:hover{background:#f4f7ff}
         pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", (pdf.internal.pageSize.getWidth() - imgW) / 2, margin, imgW, imgH, undefined, "FAST");
         const voucherNo = (document.getElementById("voucherNumber")?.value || "PTY-TECH-Voucher").replace(/[^a-z0-9_-]/gi, "_");
         pdf.save(voucherNo + ".pdf");
-        showMessage("ဘောင်ချာ PDF ကို Download ပြုလုပ်နေပါပြီ။");
+        showMessage("ဘောင်ချာ " + saved.voucher.voucher_no + " ကို " + (saved.alreadySaved ? "History ထဲရှိပြီးသားဖြစ်ပြီး " : "History ထဲသိမ်းပြီး ") + "PDF Download လုပ်နေပါပြီ။");
       } catch (e) { showMessage("PDF သိမ်းမရပါ: " + e.message, true); }
       finally { setButtonBusy(button, false); }
     });
@@ -785,6 +796,7 @@ tbody tr:hover{background:#f4f7ff}
       if (!area) return;
       setButtonBusy(button, true, "Image ပြုလုပ်နေသည်...");
       try {
+        const saved=await persistVoucherToHistory();
         if (!window.html2canvas) {
           await new Promise((resolve, reject) => {
             const script = document.createElement("script");
@@ -800,7 +812,7 @@ tbody tr:hover{background:#f4f7ff}
         link.download = voucherNo + ".png";
         link.href = canvas.toDataURL("image/png");
         link.click();
-        showMessage("ဘောင်ချာ Image (PNG) ကို သိမ်းပြီးပါပြီ။");
+        showMessage("ဘောင်ချာ " + saved.voucher.voucher_no + " ကို " + (saved.alreadySaved ? "History ထဲရှိပြီးသားဖြစ်ပြီး " : "History ထဲသိမ်းပြီး ") + "Image (PNG) Download လုပ်ပြီးပါပြီ။");
       } catch (e) { showMessage("Image သိမ်းမရပါ: " + e.message, true); }
       finally { setButtonBusy(button, false); }
     });
