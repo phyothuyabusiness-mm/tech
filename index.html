@@ -293,7 +293,7 @@ tbody tr:hover{background:#f4f7ff}
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:20px">
             <label style="color:#334155">Customer Name<input id="voucherCustomer" list="voucherCustomerOptions" placeholder="Customer အမည်ကို ရွေး/နှိပ်ပါ" style="display:block;width:100%;margin-top:5px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></label>
             <datalist id="voucherCustomerOptions"></datalist>
-            <label style="color:#334155">Repair Job No.<input id="voucherJobNo" placeholder="Job No." style="display:block;width:100%;margin-top:5px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></label>
+            <label style="color:#334155">Repair Job No. · Job ရွေးရန်<select id="voucherJobNo" style="display:block;width:100%;margin-top:5px;padding:10px;color:#14213d;background:#fff;border:1px solid #cbd5e1;border-radius:8px"><option value="">— Job နံပါတ်ရွေးပါ —</option></select></label>
             <label style="color:#334155">Tracking Code<input id="voucherTracking" placeholder="Tracking Code" style="display:block;width:100%;margin-top:5px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></label>
           </div>
           <div id="voucherCustomerDetails" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:-6px 0 18px;padding:14px;background:#f1f5f9;border:1px solid #dbe4ef;border-radius:10px;color:#334155"><div><strong>Phone:</strong> <span id="voucherPhone">—</span></div><div><strong>Address:</strong> <span id="voucherAddress">—</span></div><div><strong>Device:</strong> <span id="voucherDevice">—</span></div><div><strong>Problem:</strong> <span id="voucherProblem">—</span></div></div>
@@ -597,8 +597,23 @@ tbody tr:hover{background:#f4f7ff}
         if (!error && data) {
           voucherJobsCache = data;
           const options = document.getElementById("voucherCustomerOptions"); options.replaceChildren();
+          const jobSelect = document.getElementById("voucherJobNo");
+          jobSelect.replaceChildren();
+          const placeholder = document.createElement("option"); placeholder.value = ""; placeholder.textContent = "— Job နံပါတ်ရွေးပါ —"; jobSelect.appendChild(placeholder);
           const seen = new Set();
-          for (const job of data) { const name = String(job.customer_name || "").trim(); if (!name) continue; const key = name.toLowerCase(); if (seen.has(key)) continue; seen.add(key); const option = document.createElement("option"); option.value = name; options.appendChild(option); }
+          for (const job of data) {
+            if (job.job_no != null) {
+              const jobOption = document.createElement("option");
+              jobOption.value = String(job.job_no);
+              jobOption.textContent = "Job #" + job.job_no + " · " + (job.customer_name || "Customer မရှိ") + " · " + (job.device_type || "Device") + (job.brand_model ? " " + job.brand_model : "");
+              jobSelect.appendChild(jobOption);
+            }
+            const name = String(job.customer_name || "").trim(); if (!name) continue; const key = name.toLowerCase(); if (seen.has(key)) continue; seen.add(key); const option = document.createElement("option"); option.value = name; options.appendChild(option);
+          }
+          jobSelect.onchange = () => {
+            const selected = voucherJobsCache.find(job => String(job.job_no) === jobSelect.value);
+            if (selected) setVoucherCustomer(selected);
+          };
         }
       }
       if (!document.querySelector("#voucherItems tr")) for (let i=0;i<8;i++) addVoucherItem();
