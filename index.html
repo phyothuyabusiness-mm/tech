@@ -290,10 +290,12 @@ tbody tr:hover{background:#f4f7ff}
             <div style="text-align:right;font-size:13px"><label style="color:#64748b">Voucher No.</label><input id="voucherNumber" placeholder="V-0001" style="width:130px;border:0;border-bottom:1px solid #94a3b8;border-radius:0;color:#14213d;background:#fff;text-align:right"><br><label style="color:#64748b">Date</label><input id="voucherDate" type="date" style="width:145px;border:0;border-bottom:1px solid #94a3b8;border-radius:0;color:#14213d;background:#fff"></div>
           </header>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:20px">
-            <label style="color:#334155">Customer Name<input id="voucherCustomer" placeholder="Customer အမည်" style="display:block;width:100%;margin-top:5px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></label>
+            <label style="color:#334155">Customer Name<input id="voucherCustomer" list="voucherCustomerOptions" placeholder="Customer အမည်ကို ရွေး/နှိပ်ပါ" style="display:block;width:100%;margin-top:5px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></label>
+            <datalist id="voucherCustomerOptions"></datalist>
             <label style="color:#334155">Repair Job No.<input id="voucherJobNo" placeholder="Job No." style="display:block;width:100%;margin-top:5px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></label>
             <label style="color:#334155">Tracking Code<input id="voucherTracking" placeholder="Tracking Code" style="display:block;width:100%;margin-top:5px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></label>
           </div>
+          <div id="voucherCustomerDetails" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:-6px 0 18px;padding:14px;background:#f1f5f9;border:1px solid #dbe4ef;border-radius:10px;color:#334155"><div><strong>Phone:</strong> <span id="voucherPhone">—</span></div><div><strong>Address:</strong> <span id="voucherAddress">—</span></div><div><strong>Device:</strong> <span id="voucherDevice">—</span></div><div><strong>Problem:</strong> <span id="voucherProblem">—</span></div></div>
           <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:570px;color:#14213d"><thead><tr style="background:#0b2d5c;color:#fff"><th style="padding:11px;text-align:center">No</th><th style="padding:11px;text-align:left">Item</th><th style="padding:11px;text-align:right">Qty</th><th style="padding:11px;text-align:right">Unit Price (MMK)</th><th style="padding:11px;text-align:right">Amount (MMK)</th><th class="no-print" style="padding:8px"></th></tr></thead><tbody id="voucherItems"></tbody><tfoot><tr><td colspan="4" style="padding:14px;text-align:right;font-weight:800;border-top:2px solid #0b2d5c">TOTAL (MMK)</td><td id="voucherTotal" style="padding:14px;text-align:right;font-weight:900;border-top:2px solid #0b2d5c">0</td><td class="no-print"></td></tr></tfoot></table></div>
           <div style="display:flex;justify-content:space-between;gap:24px;margin-top:42px;flex-wrap:wrap"><div style="min-width:180px;border-top:1px solid #94a3b8;padding-top:8px">Customer Signature</div><div style="min-width:180px;border-top:1px solid #94a3b8;padding-top:8px;text-align:right">Authorized Signature</div></div>
           <p style="text-align:center;color:#64748b;font-size:12px;margin:26px 0 0">Thank you for choosing PTY-TECH · ကျေးဇူးတင်ပါသည်</p>
@@ -552,9 +554,44 @@ tbody tr:hover{background:#f4f7ff}
       });
       document.getElementById("voucherTotal").textContent = formatVoucherMoney(total);
     }
-    function initVoucher() {
+    let voucherJobsCache = [];
+    function setVoucherCustomer(job) {
+      if (!job) return;
+      document.getElementById("voucherCustomer").value = job.customer_name || "";
+      document.getElementById("voucherJobNo").value = job.job_no == null ? "" : String(job.job_no);
+      document.getElementById("voucherTracking").value = job.tracking_code || "";
+      document.getElementById("voucherPhone").textContent = job.customer_phone || "—";
+      document.getElementById("voucherAddress").textContent = job.customer_address || "—";
+      document.getElementById("voucherDevice").textContent = [job.device_type, job.brand_model].filter(Boolean).join(" / ") || "—";
+      document.getElementById("voucherProblem").textContent = job.problem_description || "—";
+      const body = document.getElementById("voucherItems");
+      body.replaceChildren(); voucherRowCount = 0; addVoucherItem();
+      const firstRow = body.querySelector("tr");
+      if (firstRow) {
+        firstRow.querySelector('input[aria-label^="Item"]').value = "Repair Service - " + (job.device_type || "Device") + (job.brand_model ? " " + job.brand_model : "");
+        firstRow.querySelector(".vprice").value = Number(job.repair_cost || job.estimated_cost || 0);
+        calculateVoucher();
+      }
+      if (!document.getElementById("voucherNumber").value && job.job_no != null) document.getElementById("voucherNumber").value = "V-" + String(job.job_no).padStart(4,"0");
+    }
+    document.getElementById("voucherCustomer")?.addEventListener("change", () => {
+      const name = document.getElementById("voucherCustomer").value.trim().toLowerCase();
+      const matches = voucherJobsCache.filter(job => String(job.customer_name || "").trim().toLowerCase() === name);
+      if (matches.length === 1) setVoucherCustomer(matches[0]);
+      else if (matches.length > 1) showMessage("ဒီအမည်နဲ့ Job အများကြီးရှိပါတယ်။ Repair Jobs မှ သက်ဆိုင်ရာ Job ရဲ့ ဘောင်ချာထုတ်ရန် ကိုနှိပ်ပါ။", true);
+    });
+    async function initVoucher() {
       const date = document.getElementById("voucherDate");
       if (date && !date.value) date.value = new Date().toISOString().slice(0,10);
+      if (db && currentUserId) {
+        const {data,error} = await db.from("repair_jobs").select("id,job_no,customer_name,customer_phone,customer_address,device_type,brand_model,problem_description,tracking_code,estimated_cost,repair_cost,received_at").order("received_at",{ascending:false}).limit(1000);
+        if (!error && data) {
+          voucherJobsCache = data;
+          const options = document.getElementById("voucherCustomerOptions"); options.replaceChildren();
+          const seen = new Set();
+          for (const job of data) { const name = String(job.customer_name || "").trim(); if (!name) continue; const key = name.toLowerCase(); if (seen.has(key)) continue; seen.add(key); const option = document.createElement("option"); option.value = name; options.appendChild(option); }
+        }
+      }
       if (!document.querySelector("#voucherItems tr")) for (let i=0;i<8;i++) addVoucherItem();
     }
     document.getElementById("addVoucherRow")?.addEventListener("click", addVoucherItem);
@@ -1179,6 +1216,19 @@ tbody tr:hover{background:#f4f7ff}
 
         actionCell.appendChild(statusSelect);
         actionCell.appendChild(saveButton);
+        const voucherButton = document.createElement("button");
+        voucherButton.type = "button";
+        voucherButton.className = "secondary";
+        voucherButton.style.marginTop = "6px";
+        voucherButton.textContent = "▤ ဘောင်ချာထုတ်ရန်";
+        voucherButton.addEventListener("click", async () => {
+          await initVoucher();
+          setVoucherCustomer(job);
+          showDashboardView("voucher");
+          document.getElementById("voucherCustomer").focus();
+          showMessage("Job No. " + job.job_no + " ၏ Customer အချက်အလက်များကို ဘောင်ချာထဲ ထည့်ပြီးပါပြီ။ Print မထုတ်မီ စစ်ဆေးပါ။");
+        });
+        actionCell.appendChild(voucherButton);
         tr.appendChild(actionCell);
 
         const trackingCell = document.createElement("td");
