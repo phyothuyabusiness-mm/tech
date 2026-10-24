@@ -341,7 +341,6 @@ tbody tr:hover{background:#f4f7ff}
           <table>
             <thead>
               <tr>
-                <th>🗑 Delete</th>
                 <th>Job No.</th>
                 <th>Customer</th>
                 <th>စက်အမျိုးအစား</th>
@@ -353,6 +352,7 @@ tbody tr:hover{background:#f4f7ff}
                 <th>Tracking Code</th>
                 <th>SMS ပို့ရန်</th>
                 <th>Edit</th>
+                <th>🗑 Delete</th>
               </tr>
             </thead>
             <tbody id="jobs"></tbody>
@@ -916,8 +916,8 @@ tbody tr:hover{background:#f4f7ff}
           }
         });
         deleteCell.appendChild(deleteButton);
-        // Keep Delete visible as the first column instead of far off-screen.
-        tr.insertBefore(deleteCell, tr.firstChild);
+        // Append Delete as the final column in the job list.
+        tr.appendChild(deleteCell);
 
         jobsBody.appendChild(tr);
       }
