@@ -206,6 +206,7 @@ tbody tr:hover{background:#f4f7ff}
         <a href="#customersModule" data-view="customers">♙ Customers · ဖောက်သည်များ</a>
         <a href="#inventoryModule" data-view="inventory">▣ Inventory · ပစ္စည်းစာရင်း</a>
         <a href="#reportsModule" data-view="reports">▥ Reports · အစီရင်ခံစာ</a>
+        <a href="#financeModule" data-view="finance">₭ Payments & Expenses · ငွေစာရင်း</a>
       </nav>
       <div class="card" id="customersModule">
         <h3>♙ Customers · ဖောက်သည်များ</h3>
@@ -237,6 +238,38 @@ tbody tr:hover{background:#f4f7ff}
         <form id="stockMovementForm"><div class="grid"><div><label for="movementItem">ပစ္စည်းရွေးရန် *</label><select id="movementItem" required><option value="">ပစ္စည်းစာရင်းဖတ်ရန်</option></select></div><div><label for="movementType">လုပ်ဆောင်ချက် *</label><select id="movementType" required><option value="in">Stock အဝင် (+)</option><option value="out">Stock အထွက် (-)</option></select></div><div><label for="movementQty">အရေအတွက် *</label><input id="movementQty" type="number" min="1" step="1" required></div><div><label for="movementNotes">မှတ်ချက်</label><input id="movementNotes" placeholder="Repair job အတွက် အသုံးပြု"></div></div><button type="submit" id="movementSubmit">Stock Movement သိမ်းမည်</button></form>
         <h3 style="margin-top:24px">Stock Movement History · အဝင်/အထွက် မှတ်တမ်း</h3><div class="table-wrap"><table style="min-width:760px"><thead><tr><th>အချိန်</th><th>ပစ္စည်း</th><th>အမျိုးအစား</th><th>အရေအတွက်</th><th>မှတ်ချက်</th><th>Admin ID</th></tr></thead><tbody id="stockMovementRows"><tr><td colspan="6">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody></table></div><label for="inventorySearch">ပစ္စည်းရှာရန်</label><input id="inventorySearch" type="search" placeholder="ပစ္စည်းအမည် / Part No..." autocomplete="off">
         <div class="table-wrap"><table style="min-width:900px"><thead><tr><th>ပစ္စည်းအမည်</th><th>Part No. / SKU</th><th>လက်ကျန်</th><th>အနည်းဆုံးလက်ကျန်</th><th>တစ်ခုချင်းဝယ်ဈေး</th><th>သိုလှောင်နေရာ</th><th>အခြေအနေ</th></tr></thead><tbody id="inventoryRows"><tr><td colspan="7">Supabase Inventory tables တည်ဆောက်ရန် လိုအပ်သည်။</td></tr></tbody></table></div>
+      </div>
+      <div class="card" id="financeModule">
+        <h3>₭ Payments & Expenses · ငွေဝင် / ငွေထွက်</h3>
+        <p class="muted">Customer ထံမှ အမှန်တကယ်လက်ခံရရှိငွေနှင့် လုပ်ငန်းအသုံးစရိတ်ကို သီးခြားမှတ်တမ်းတင်ပါ။ Estimated Cost ကို ဝင်ငွေအဖြစ် မတွက်ပါ။</p>
+        <div class="module-strip">
+          <div class="module-tile"><div class="tile-icon">＋</div><strong id="financeIncome">—</strong><span>လက်ခံရရှိငွေ စုစုပေါင်း</span></div>
+          <div class="module-tile"><div class="tile-icon">−</div><strong id="financeExpenses">—</strong><span>အသုံးစရိတ် စုစုပေါင်း</span></div>
+          <div class="module-tile"><div class="tile-icon">＝</div><strong id="financeNet">—</strong><span>ငွေသားအသားတင် (ဝင်ငွေ − အသုံးစရိတ်)</span></div>
+          <div class="module-tile"><div class="tile-icon">!</div><strong id="financeUnpaid">—</strong><span>ပေးရန်ကျန်ငွေ (သတ်မှတ်ပြုပြင်ခအပေါ်)</span></div>
+        </div>
+        <h3 style="margin-top:24px">ငွေလက်ခံမှတ်တမ်း ထည့်ရန်</h3>
+        <form id="paymentForm"><div class="grid">
+          <div><label for="paymentJob">Repair Job (ရွေးချယ်နိုင်)</label><select id="paymentJob"><option value="">Job မချိတ်ဘဲ မှတ်တမ်းတင်ရန်</option></select></div>
+          <div><label for="paymentAmount">လက်ခံရရှိငွေ (MMK) *</label><input id="paymentAmount" type="number" min="1" step="1" required></div>
+          <div><label for="paymentDate">လက်ခံရက် *</label><input id="paymentDate" type="date" required></div>
+          <div><label for="paymentMethod">ငွေပေးချေမှုနည်းလမ်း *</label><select id="paymentMethod" required><option value="cash">Cash · ငွေသား</option><option value="bank">Bank Transfer · ဘဏ်</option><option value="mobile_wallet">Mobile Wallet</option><option value="other">Other · အခြား</option></select></div>
+          <div><label for="paymentNotes">မှတ်ချက် / Receipt No.</label><input id="paymentNotes" maxlength="500" placeholder="ဥပမာ - Deposit / Balance"></div>
+        </div><button type="submit" id="paymentSubmit">＋ ငွေလက်ခံမှတ်တမ်း သိမ်းမည်</button></form>
+        <p id="paymentMessage" class="muted" aria-live="polite"></p>
+        <h3 style="margin-top:24px">လုပ်ငန်းအသုံးစရိတ် ထည့်ရန်</h3>
+        <form id="expenseForm"><div class="grid">
+          <div><label for="expenseCategory">အသုံးစရိတ်အမျိုးအစား *</label><select id="expenseCategory" required><option value="parts">Spare Parts · အပိုပစ္စည်းဝယ်ယူ</option><option value="tools">Tools / Equipment · ကိရိယာ</option><option value="transport">Transport · သယ်ယူပို့ဆောင်</option><option value="utilities">Utilities · မီတာခ/အင်တာနက်</option><option value="rent">Rent · အငှားခ</option><option value="salary">Salary · လုပ်အားခ</option><option value="other">Other · အခြား</option></select></div>
+          <div><label for="expenseAmount">အသုံးစရိတ် (MMK) *</label><input id="expenseAmount" type="number" min="1" step="1" required></div>
+          <div><label for="expenseDate">ပေးချေရက် *</label><input id="expenseDate" type="date" required></div>
+          <div><label for="expenseJob">သက်ဆိုင်ရာ Repair Job (ရွေးချယ်နိုင်)</label><select id="expenseJob"><option value="">Job မချိတ်ဘဲ မှတ်တမ်းတင်ရန်</option></select></div>
+          <div><label for="expenseNotes">မှတ်ချက် / ဘောင်ချာနံပါတ်</label><input id="expenseNotes" maxlength="500" placeholder="ပေးချေမှုအကြောင်းအရာ"></div>
+        </div><button type="submit" id="expenseSubmit">＋ အသုံးစရိတ် သိမ်းမည်</button></form>
+        <p id="expenseMessage" class="muted" aria-live="polite"></p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:24px"><h3 style="margin:0">ငွေစာရင်းမှတ်တမ်း</h3><button type="button" class="secondary" id="refreshFinance">↻ ပြန်ဖတ်ရန်</button><button type="button" id="exportFinance">⬇ ငွေစာရင်း CSV ထုတ်ရန်</button></div>
+        <h4>ငွေလက်ခံမှု</h4><div class="table-wrap"><table style="min-width:760px"><thead><tr><th>ရက်စွဲ</th><th>Job No.</th><th>Customer</th><th>ငွေပေးနည်း</th><th>လက်ခံငွေ</th><th>မှတ်ချက်</th></tr></thead><tbody id="paymentRows"><tr><td colspan="6">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody></table></div>
+        <h4 style="margin-top:20px">အသုံးစရိတ်</h4><div class="table-wrap"><table style="min-width:760px"><thead><tr><th>ရက်စွဲ</th><th>အမျိုးအစား</th><th>Job No.</th><th>Customer</th><th>အသုံးစရိတ်</th><th>မှတ်ချက်</th></tr></thead><tbody id="expenseRows"><tr><td colspan="6">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody></table></div>
+        <p class="muted">တွက်ချက်မှုရှင်းလင်းချက်: ငွေသားအသားတင် = လက်ခံရရှိငွေ − မှတ်တမ်းတင်အသုံးစရိတ်။ ဤတန်ဖိုးသည် အခွန်၊ မမှတ်တမ်းတင်ထားသော ကုန်ကျစရိတ်၊ Inventory လက်ကျန်တန်ဖိုးနှင့် အကြွေးများကို မထည့်သွင်းသေးသော cash-based summary ဖြစ်သည်။ Job အလိုက်ပေးရန်ကျန်ငွေကို Estimated Cost မှ လက်ခံပြီးငွေကို နုတ်၍ ခန့်မှန်းထားသည်။</p>
       </div>
       <div class="card" id="reportsModule">
         <h3>▥ Reports & Profit · အစီရင်ခံစာ</h3>
@@ -465,7 +498,8 @@ tbody tr:hover{background:#f4f7ff}
       jobForm: ["jobFormModule"],
       customers: ["customersModule"],
       inventory: ["inventoryModule"],
-      reports: ["reportsModule"]
+      reports: ["reportsModule"],
+      finance: ["financeModule"]
     };
     function showDashboardView(viewName) {
       const targets = dashboardViews[viewName] || dashboardViews.overview;
@@ -476,7 +510,8 @@ tbody tr:hover{background:#f4f7ff}
         document.getElementById("jobFormModule"),
         document.getElementById("customersModule"),
         document.getElementById("inventoryModule"),
-        document.getElementById("reportsModule")
+        document.getElementById("reportsModule"),
+        document.getElementById("financeModule")
       ].filter(Boolean);
       sections.forEach(section => section.classList.toggle("dashboard-view-hidden", !targets.includes(section.id)));
       workspaceNav?.querySelectorAll("[data-view]").forEach(link => {
@@ -486,7 +521,7 @@ tbody tr:hover{background:#f4f7ff}
         else link.removeAttribute("aria-current");
       });
       const eyebrow = document.querySelector("#dashboard>.card:first-child .view-eyebrow");
-      const labels = {overview:"OVERVIEW",jobs:"REPAIR JOBS",history:"STATUS HISTORY",jobForm:"NEW / EDIT JOB",customers:"CUSTOMERS",inventory:"INVENTORY",reports:"REPORTS & ANALYTICS"};
+      const labels = {overview:"OVERVIEW",jobs:"REPAIR JOBS",history:"STATUS HISTORY",jobForm:"NEW / EDIT JOB",customers:"CUSTOMERS",inventory:"INVENTORY",reports:"REPORTS & ANALYTICS",finance:"PAYMENTS & EXPENSES"};
       if (eyebrow) eyebrow.textContent = labels[viewName] || labels.overview;
       if (viewName !== "overview") {
         const target = targets.length ? document.getElementById(targets[0]) : null;
@@ -501,6 +536,7 @@ tbody tr:hover{background:#f4f7ff}
         showDashboardView(link.dataset.view);
         if (link.dataset.view === "customers") loadCustomers();
         if (link.dataset.view === "inventory") loadInventory();
+        if (link.dataset.view === "finance") loadFinance();
         setMenuOpen(false);
       });
     });
@@ -730,6 +766,119 @@ tbody tr:hover{background:#f4f7ff}
       finally{btn.disabled=false;}
     });
 
+    let financePayments = [];
+    let financeExpenses = [];
+    let financeJobs = [];
+    const paymentMethodLabels = {cash:"Cash",bank:"Bank Transfer",mobile_wallet:"Mobile Wallet",other:"Other"};
+    const expenseCategoryLabels = {parts:"Spare Parts",tools:"Tools / Equipment",transport:"Transport",utilities:"Utilities",rent:"Rent",salary:"Salary",other:"Other"};
+    function localDateInputValue() {
+      const d = new Date(); return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+    }
+    function setFinanceJobOptions(jobs) {
+      for (const id of ["paymentJob","expenseJob"]) {
+        const select = document.getElementById(id); if (!select) continue;
+        const previous = select.value;
+        select.replaceChildren();
+        const blank = document.createElement("option"); blank.value=""; blank.textContent="Job မချိတ်ဘဲ မှတ်တမ်းတင်ရန်"; select.appendChild(blank);
+        for (const job of jobs) {
+          const option = document.createElement("option"); option.value=job.id;
+          option.textContent="Job #"+job.job_no+" · "+(job.customer_name||"Customer")+" · "+(job.device_type||"Device");
+          select.appendChild(option);
+        }
+        if (jobs.some(job=>job.id===previous)) select.value=previous;
+      }
+    }
+    async function loadFinance() {
+      if (!db || !currentUserId) return;
+      const msg = document.getElementById("paymentMessage");
+      if (msg) msg.textContent = "ငွေစာရင်းဖတ်နေသည်...";
+      try {
+        const results = await Promise.all([
+          db.from("repair_jobs").select("id,job_no,customer_name,estimated_cost,received_at").order("received_at",{ascending:false}).limit(1000),
+          db.from("repair_payments").select("id,repair_job_id,amount,payment_date,payment_method,notes,created_at,repair_jobs(job_no,customer_name)").order("payment_date",{ascending:false}).limit(1000),
+          db.from("business_expenses").select("id,repair_job_id,category,amount,expense_date,notes,created_at,repair_jobs(job_no,customer_name)").order("expense_date",{ascending:false}).limit(1000)
+        ]);
+        for (const result of results) if (result.error) throw result.error;
+        financeJobs = results[0].data || [];
+        financePayments = results[1].data || [];
+        financeExpenses = results[2].data || [];
+        setFinanceJobOptions(financeJobs);
+        const income = financePayments.reduce((s,x)=>s+Number(x.amount||0),0);
+        const expenses = financeExpenses.reduce((s,x)=>s+Number(x.amount||0),0);
+        const receivedByJob = new Map();
+        for (const p of financePayments) if (p.repair_job_id) receivedByJob.set(p.repair_job_id,(receivedByJob.get(p.repair_job_id)||0)+Number(p.amount||0));
+        const unpaid = financeJobs.reduce((s,j)=>s+Math.max(0,Number(j.estimated_cost||0)-(receivedByJob.get(j.id)||0)),0);
+        document.getElementById("financeIncome").textContent=formatMMK(income);
+        document.getElementById("financeExpenses").textContent=formatMMK(expenses);
+        document.getElementById("financeNet").textContent=formatMMK(income-expenses);
+        document.getElementById("financeUnpaid").textContent=formatMMK(unpaid);
+        renderFinanceTables();
+        if (msg) msg.textContent = "ငွေလက်ခံမှတ်တမ်း "+financePayments.length+" ခု၊ အသုံးစရိတ် "+financeExpenses.length+" ခု ဖတ်ပြီးပါပြီ။";
+      } catch (error) {
+        if (msg) msg.textContent = "ငွေစာရင်းဖတ်မရပါ။ Supabase SQL setup နှင့် RLS ကိုစစ်ပါ: "+error.message;
+      }
+    }
+    function renderFinanceTables() {
+      const paymentBody=document.getElementById("paymentRows"), expenseBody=document.getElementById("expenseRows");
+      if (paymentBody) {
+        paymentBody.replaceChildren();
+        if (!financePayments.length) { const r=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.textContent="ငွေလက်ခံမှတ်တမ်း မရှိသေးပါ။";r.appendChild(td);paymentBody.appendChild(r); }
+        for (const p of financePayments) {
+          const r=document.createElement("tr");
+          for (const v of [formatDate(p.payment_date),p.repair_jobs?.job_no ? "#"+p.repair_jobs.job_no : "—",p.repair_jobs?.customer_name||"—",paymentMethodLabels[p.payment_method]||p.payment_method,formatMMK(p.amount),p.notes||"—"]) {const td=document.createElement("td");td.textContent=String(v);r.appendChild(td);}
+          paymentBody.appendChild(r);
+        }
+      }
+      if (expenseBody) {
+        expenseBody.replaceChildren();
+        if (!financeExpenses.length) { const r=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.textContent="အသုံးစရိတ်မှတ်တမ်း မရှိသေးပါ။";r.appendChild(td);expenseBody.appendChild(r); }
+        for (const e of financeExpenses) {
+          const r=document.createElement("tr");
+          for (const v of [formatDate(e.expense_date),expenseCategoryLabels[e.category]||e.category,e.repair_jobs?.job_no ? "#"+e.repair_jobs.job_no : "—",e.repair_jobs?.customer_name||"—",formatMMK(e.amount),e.notes||"—"]) {const td=document.createElement("td");td.textContent=String(v);r.appendChild(td);}
+          expenseBody.appendChild(r);
+        }
+      }
+    }
+    document.getElementById("paymentDate").value=localDateInputValue();
+    document.getElementById("expenseDate").value=localDateInputValue();
+    document.getElementById("paymentForm")?.addEventListener("submit",async event=>{
+      event.preventDefault(); const btn=document.getElementById("paymentSubmit"),msg=document.getElementById("paymentMessage");
+      if(!db||!currentUserId){msg.textContent="Admin Login လိုအပ်သည်။";return;}
+      const amount=Number(document.getElementById("paymentAmount").value);
+      if(!Number.isFinite(amount)||amount<=0){msg.textContent="လက်ခံငွေကို မှန်ကန်စွာထည့်ပါ။";return;}
+      btn.disabled=true;
+      try{
+        const payload={repair_job_id:document.getElementById("paymentJob").value||null,amount,payment_date:document.getElementById("paymentDate").value,payment_method:document.getElementById("paymentMethod").value,notes:document.getElementById("paymentNotes").value.trim()||null,recorded_by:currentUserId};
+        const {error}=await db.from("repair_payments").insert(payload);if(error)throw error;
+        document.getElementById("paymentAmount").value="";document.getElementById("paymentNotes").value="";
+        msg.textContent="ငွေလက်ခံမှတ်တမ်း သိမ်းပြီးပါပြီ။";await loadFinance();
+      }catch(error){msg.textContent="ငွေလက်ခံမှတ်တမ်း သိမ်းမရပါ: "+error.message;}
+      finally{btn.disabled=false;}
+    });
+    document.getElementById("expenseForm")?.addEventListener("submit",async event=>{
+      event.preventDefault(); const btn=document.getElementById("expenseSubmit"),msg=document.getElementById("expenseMessage");
+      if(!db||!currentUserId){msg.textContent="Admin Login လိုအပ်သည်။";return;}
+      const amount=Number(document.getElementById("expenseAmount").value);
+      if(!Number.isFinite(amount)||amount<=0){msg.textContent="အသုံးစရိတ်ကို မှန်ကန်စွာထည့်ပါ။";return;}
+      btn.disabled=true;
+      try{
+        const payload={repair_job_id:document.getElementById("expenseJob").value||null,category:document.getElementById("expenseCategory").value,amount,expense_date:document.getElementById("expenseDate").value,notes:document.getElementById("expenseNotes").value.trim()||null,recorded_by:currentUserId};
+        const {error}=await db.from("business_expenses").insert(payload);if(error)throw error;
+        document.getElementById("expenseAmount").value="";document.getElementById("expenseNotes").value="";
+        msg.textContent="အသုံးစရိတ် မှတ်တမ်းသိမ်းပြီးပါပြီ။";await loadFinance();
+      }catch(error){msg.textContent="အသုံးစရိတ် သိမ်းမရပါ: "+error.message;}
+      finally{btn.disabled=false;}
+    });
+    document.getElementById("refreshFinance")?.addEventListener("click",loadFinance);
+    document.getElementById("exportFinance")?.addEventListener("click",()=>{
+      const quote=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+      const rows=[["Type","Date","Job No","Customer","Category/Method","Amount MMK","Notes"]];
+      for(const p of financePayments) rows.push(["Payment",p.payment_date,p.repair_jobs?.job_no||"",p.repair_jobs?.customer_name||"",paymentMethodLabels[p.payment_method]||p.payment_method,p.amount,p.notes||""]);
+      for(const e of financeExpenses) rows.push(["Expense",e.expense_date,e.repair_jobs?.job_no||"",e.repair_jobs?.customer_name||"",expenseCategoryLabels[e.category]||e.category,e.amount,e.notes||""]);
+      const blob=new Blob(["\uFEFF"+rows.map(r=>r.map(quote).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8;"});
+      const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="PTY-TECH-Finance-"+localDateInputValue()+".csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+    });
+
     let reportJobRows = [];
     const reportStatusLabels = {
       received: "လက်ခံရရှိ",
@@ -812,7 +961,7 @@ tbody tr:hover{background:#f4f7ff}
       const { data, error } = await db
         .from("repair_jobs")
         .select(
-          "job_no, customer_name, customer_phone, device_type, brand_model, problem_description, status, tracking_code, estimated_cost, repair_cost, received_at, estimated_completion_date"
+          "id, job_no, customer_name, customer_phone, device_type, brand_model, problem_description, status, tracking_code, estimated_cost, repair_cost, received_at, estimated_completion_date"
         )
         .order("received_at", { ascending: false })
         .limit(100);
