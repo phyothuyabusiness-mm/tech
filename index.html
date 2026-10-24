@@ -274,6 +274,7 @@ input[type=date]{color-scheme:dark}
                 <th>Tracking Code</th>
                 <th>SMS ပို့ရန်</th>
                 <th>Edit</th>
+                <th>Delete</th>
               </tr>
             </thead>
             <tbody id="jobs"></tbody>
@@ -602,6 +603,61 @@ input[type=date]{color-scheme:dark}
         });
         editCell.appendChild(editButton);
         tr.appendChild(editCell);
+
+        const deleteCell = document.createElement("td");
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "danger";
+        deleteButton.textContent = "Delete";
+        deleteButton.setAttribute("aria-label", "Delete Job No. " + job.job_no);
+        deleteButton.addEventListener("click", async () => {
+          if (!db || !currentUserId) {
+            showMessage("Admin Login ပြန်ဝင်ပါ။", true);
+            return;
+          }
+
+          const confirmed = window.confirm(
+            "သတိပြုရန် — ဒီလုပ်ဆောင်ချက်ကို ပြန်ပြင်၍မရနိုင်ပါ။\n\n" +
+            "Job No: " + job.job_no + "\n" +
+            "Customer: " + (job.customer_name || "-") + "\n" +
+            "Tracking Code: " + (job.tracking_code || "-") + "\n\n" +
+            "ဒီ Repair Job ကို Database မှ အပြီးဖျက်မှာ သေချာပါသလား?"
+          );
+          if (!confirmed) return;
+
+          setButtonBusy(deleteButton, true, "ဖျက်နေသည်...");
+          try {
+            const { data: deletedRows, error: deleteError } = await db
+              .from("repair_jobs")
+              .delete()
+              .eq("job_no", job.job_no)
+              .select("job_no");
+
+            if (deleteError) {
+              throw new Error(
+                "Job ဖျက်မရပါ။ Admin DELETE Policy သို့မဟုတ် Status History Foreign Key က တားထားနိုင်သည်။ " +
+                deleteError.message
+              );
+            }
+            if (!deletedRows || deletedRows.length === 0) {
+              throw new Error(
+                "ဖျက်ထားသော Job ကို Database မှ အတည်ပြုမရပါ။ Admin DELETE Policy နှင့် Job No ကို စစ်ဆေးပါ။"
+              );
+            }
+
+            showMessage(
+              "Job No. " + job.job_no +
+              " ကို ဖျက်ပြီးပါပြီ။ ပြန်လည်ရယူ၍မရနိုင်ပါ။"
+            );
+            await loadJobs();
+          } catch (deleteError) {
+            showMessage("Repair Job ဖျက်မရပါ: " + deleteError.message, true);
+          } finally {
+            setButtonBusy(deleteButton, false);
+          }
+        });
+        deleteCell.appendChild(deleteButton);
+        tr.appendChild(deleteCell);
 
         jobsBody.appendChild(tr);
       }
