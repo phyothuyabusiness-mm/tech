@@ -209,6 +209,7 @@ tbody tr:hover{background:#f4f7ff}
         <a href="#financeModule" data-view="finance">₭ Payments & Expenses · ငွေစာရင်း</a>
         <a href="#voucherModule" data-view="voucher">▤ New Voucher · ဘောင်ချာ</a>
         <a href="#voucherHistoryModule" data-view="voucherHistory">▤ Voucher History · ဘောင်ချာမှတ်တမ်း</a>
+        <a href="#recycleBinModule" data-view="recycleBin">♻ Recycle Bin · ဖျက်ထားသောစာရင်း</a>
       </nav>
       <div class="card" id="customersModule">
         <h3>♙ Customers · ဖောက်သည်များ</h3>
@@ -309,6 +310,14 @@ tbody tr:hover{background:#f4f7ff}
         <label for="voucherHistorySearch">ဘောင်ချာမှတ်တမ်း ရှာရန်</label><input id="voucherHistorySearch" type="search" placeholder="Voucher No, Customer, Phone, Job No..." autocomplete="off">
         <p id="voucherHistoryCount" class="muted">မှတ်တမ်းဖတ်ရန် အသင့်</p>
         <div class="table-wrap"><table style="min-width:850px"><thead><tr><th>Voucher No.</th><th>ရက်စွဲ</th><th>Customer</th><th>ဖုန်း</th><th>Job No.</th><th>Total (MMK)</th><th>လုပ်ဆောင်ချက်</th></tr></thead><tbody id="voucherHistoryRows"><tr><td colspan="7">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody></table></div>
+      </div>
+
+      <div class="card" id="recycleBinModule">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h3 style="margin:0">♻ Recycle Bin · ဖျက်ထားသောစာရင်း</h3><button type="button" class="secondary" id="refreshRecycleBin">↻ ပြန်ဖတ်ရန်</button></div>
+        <p class="muted">Voucher နှင့် Repair Job မှ ဖျက်ထားသောမှတ်တမ်းများကို ယာယီသိမ်းထားသည်။ ပြန်လည်ရယူနိုင်သလို အပြီးဖျက်လည်းနိုင်သည်။</p>
+        <label for="recycleBinSearch">Recycle Bin ရှာရန်</label><input id="recycleBinSearch" type="search" placeholder="အမျိုးအစား၊ Job No., Voucher No., Customer..." autocomplete="off">
+        <p id="recycleBinCount" class="muted">မှတ်တမ်းဖတ်ရန် အသင့်</p>
+        <div class="table-wrap"><table style="min-width:850px"><thead><tr><th>အမျိုးအစား</th><th>နံပါတ်</th><th>Customer</th><th>ဖျက်သည့်ရက်</th><th>လုပ်ဆောင်ချက်</th></tr></thead><tbody id="recycleBinRows"><tr><td colspan="5">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody></table></div>
       </div>
 
       <div class="card" id="reportsModule">
@@ -739,7 +748,8 @@ tbody tr:hover{background:#f4f7ff}
         document.getElementById("reportsModule"),
         document.getElementById("financeModule"),
         document.getElementById("voucherModule"),
-        document.getElementById("voucherHistoryModule")
+        document.getElementById("voucherHistoryModule"),
+        document.getElementById("recycleBinModule")
       ].filter(Boolean);
       sections.forEach(section => section.classList.toggle("dashboard-view-hidden", !targets.includes(section.id)));
       workspaceNav?.querySelectorAll("[data-view]").forEach(link => {
@@ -749,7 +759,7 @@ tbody tr:hover{background:#f4f7ff}
         else link.removeAttribute("aria-current");
       });
       const eyebrow = document.querySelector("#dashboard>.card:first-child .view-eyebrow");
-      const labels = {overview:"OVERVIEW",jobs:"REPAIR JOBS",history:"STATUS HISTORY",jobForm:"NEW / EDIT JOB",customers:"CUSTOMERS",inventory:"INVENTORY",reports:"REPORTS & ANALYTICS",finance:"PAYMENTS & EXPENSES",voucher:"NEW VOUCHER",voucherHistory:"VOUCHER HISTORY"};
+      const labels = {overview:"OVERVIEW",jobs:"REPAIR JOBS",history:"STATUS HISTORY",jobForm:"NEW / EDIT JOB",customers:"CUSTOMERS",inventory:"INVENTORY",reports:"REPORTS & ANALYTICS",finance:"PAYMENTS & EXPENSES",voucher:"NEW VOUCHER",voucherHistory:"VOUCHER HISTORY",recycleBin:"RECYCLE BIN"};
       if (eyebrow) eyebrow.textContent = labels[viewName] || labels.overview;
       if (viewName !== "overview") {
         const target = targets.length ? document.getElementById(targets[0]) : null;
@@ -767,6 +777,7 @@ tbody tr:hover{background:#f4f7ff}
         if (link.dataset.view === "finance") loadFinance();
         if (link.dataset.view === "voucher") initVoucher();
         if (link.dataset.view === "voucherHistory") loadVoucherHistory();
+        if (link.dataset.view === "recycleBin") loadRecycleBin();
         setMenuOpen(false);
       });
     });
