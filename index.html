@@ -214,15 +214,15 @@ tbody tr:hover{background:#f4f7ff}
       </div>
       <div class="card" id="historyModule">
         <h3>↻ Repair Status History · အခြေအနေမှတ်တမ်း</h3>
-        <p class="muted">Repair Job တစ်ခုချင်းစီ၏ Status ပြောင်းလဲမှု၊ ပြောင်းလဲသည့်အချိန်နှင့် Admin ID ကို စစ်ဆေးနိုင်သည်။</p>
+        <p class="muted">Repair Job တစ်ခုချင်းစီ၏ Customer Name၊ Status ပြောင်းလဲမှု၊ ပြောင်းလဲသည့်အချိန်နှင့် Admin ID ကို စစ်ဆေးနိုင်သည်။</p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0">
           <button type="button" class="secondary" id="refreshHistory">↻ မှတ်တမ်းပြန်ဖတ်ရန်</button>
           <span class="muted" id="historyCount" aria-live="polite">မှတ်တမ်းဖတ်ရန် အသင့်</span>
         </div>
         <div class="table-wrap">
           <table style="min-width:760px">
-            <thead><tr><th>Job No.</th><th>ယခင် Status</th><th>ပြောင်းလဲ Status</th><th>ပြောင်းလဲချိန်</th><th>Admin User ID</th></tr></thead>
-            <tbody id="statusHistoryRows"><tr><td colspan="5">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody>
+            <thead><tr><th>Job No.</th><th>Customer Name</th><th>ယခင် Status</th><th>ပြောင်းလဲ Status</th><th>ပြောင်းလဲချိန်</th><th>Admin User ID</th></tr></thead>
+            <tbody id="statusHistoryRows"><tr><td colspan="6">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -574,7 +574,7 @@ tbody tr:hover{background:#f4f7ff}
         count.textContent = "မှတ်တမ်းဖတ်မရပါ";
         const row = document.createElement("tr");
         const cell = document.createElement("td");
-        cell.colSpan = 5;
+        cell.colSpan = 6;
         cell.textContent = "Status History ဖတ်မရပါ: " + error.message;
         row.appendChild(cell);
         body.appendChild(row);
@@ -606,13 +606,14 @@ tbody tr:hover{background:#f4f7ff}
       // cannot infer the repair_status_history -> repair_jobs relationship.
       const jobIds = [...new Set(rows.map(item => item.repair_job_id).filter(Boolean))];
       const jobNoById = {};
+      const customerNameById = {};
       if (jobIds.length) {
         const { data: jobs, error: jobsError } = await db
           .from("repair_jobs")
-          .select("id, job_no")
+          .select("id, job_no, customer_name")
           .in("id", jobIds);
         if (!jobsError) {
-          for (const job of (jobs || [])) jobNoById[job.id] = job.job_no;
+          for (const job of (jobs || [])) { jobNoById[job.id] = job.job_no; customerNameById[job.id] = job.customer_name; }
         }
       }
 
@@ -621,6 +622,7 @@ tbody tr:hover{background:#f4f7ff}
         const row = document.createElement("tr");
         const values = [
           jobNoById[item.repair_job_id] ?? "—",
+          customerNameById[item.repair_job_id] || "—",
           labels[item.old_status] || item.old_status || "—",
           labels[item.new_status] || item.new_status || "—",
           item.changed_at ? new Date(item.changed_at).toLocaleString("en-GB") : "—",
