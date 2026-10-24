@@ -207,6 +207,7 @@ tbody tr:hover{background:#f4f7ff}
         <a href="#inventoryModule" data-view="inventory">▣ Inventory · ပစ္စည်းစာရင်း</a>
         <a href="#reportsModule" data-view="reports">▥ Reports · အစီရင်ခံစာ</a>
         <a href="#financeModule" data-view="finance">₭ Payments & Expenses · ငွေစာရင်း</a>
+        <a href="#voucherModule" data-view="voucher">▤ New Voucher · ဘောင်ချာ</a>
       </nav>
       <div class="card" id="customersModule">
         <h3>♙ Customers · ဖောက်သည်များ</h3>
@@ -271,7 +272,34 @@ tbody tr:hover{background:#f4f7ff}
         <h4 style="margin-top:20px">အသုံးစရိတ်</h4><div class="table-wrap"><table style="min-width:760px"><thead><tr><th>ရက်စွဲ</th><th>အမျိုးအစား</th><th>Job No.</th><th>Customer</th><th>အသုံးစရိတ်</th><th>မှတ်ချက်</th></tr></thead><tbody id="expenseRows"><tr><td colspan="6">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody></table></div>
         <p class="muted">တွက်ချက်မှုရှင်းလင်းချက်: ငွေသားအသားတင် = လက်ခံရရှိငွေ − မှတ်တမ်းတင်အသုံးစရိတ်။ ဤတန်ဖိုးသည် အခွန်၊ မမှတ်တမ်းတင်ထားသော ကုန်ကျစရိတ်၊ Inventory လက်ကျန်တန်ဖိုးနှင့် အကြွေးများကို မထည့်သွင်းသေးသော cash-based summary ဖြစ်သည်။ Job အလိုက်ပေးရန်ကျန်ငွေကို Estimated Cost မှ လက်ခံပြီးငွေကို နုတ်၍ ခန့်မှန်းထားသည်။</p>
       </div>
-      <div class="card" id="reportsModule">
+
+      <div class="card" id="voucherModule">
+        <div style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap">
+          <h3 style="margin:0">▤ New Voucher · ပြုပြင်စရိတ်ဘောင်ချာ</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="secondary" id="addVoucherRow">＋ Item ထည့်ရန်</button><button type="button" id="printVoucher">🖨 Print Voucher</button></div>
+        </div>
+        <p class="muted">PTY-TECH အမှတ်တံဆိပ်ပါ ဘောင်ချာကို ဖြည့်ပြီး Print ထုတ်နိုင်ပါသည်။ Amount နှင့် Total ကို အလိုအလျောက်တွက်ချက်ပေးသည်။</p>
+        <div id="voucherPrintArea" style="background:#fff;color:#14213d;border-radius:14px;padding:26px;margin-top:18px">
+          <header style="display:flex;align-items:center;gap:18px;border-bottom:3px solid #0b2d5c;padding-bottom:16px;margin-bottom:18px">
+            <svg width="86" height="86" viewBox="0 0 100 100" role="img" aria-label="PTY-TECH Logo" style="flex-shrink:0">
+              <defs><linearGradient id="ptyLogoGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1763d1"/><stop offset="1" stop-color="#07152e"/></linearGradient></defs>
+              <rect x="3" y="3" width="94" height="94" rx="23" fill="url(#ptyLogoGrad)"/>
+              <path d="M57 12 31 53h18l-6 35 27-47H51z" fill="#fff"/><circle cx="73" cy="25" r="5" fill="#e6b85c"/>
+            </svg>
+            <div style="flex:1"><div style="font-size:28px;font-weight:900;letter-spacing:2px;color:#0b2d5c">PTY-TECH</div><div style="font-weight:700;color:#1763d1;letter-spacing:1px">WELDING MACHINE REPAIR</div><div style="font-size:13px;color:#64748b;margin-top:5px">REPAIR VOUCHER / ပြုပြင်စရိတ်ဘောင်ချာ</div></div>
+            <div style="text-align:right;font-size:13px"><label style="color:#64748b">Voucher No.</label><input id="voucherNumber" placeholder="V-0001" style="width:130px;border:0;border-bottom:1px solid #94a3b8;border-radius:0;color:#14213d;background:#fff;text-align:right"><br><label style="color:#64748b">Date</label><input id="voucherDate" type="date" style="width:145px;border:0;border-bottom:1px solid #94a3b8;border-radius:0;color:#14213d;background:#fff"></div>
+          </header>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:20px">
+            <label style="color:#334155">Customer Name<input id="voucherCustomer" placeholder="Customer အမည်" style="display:block;width:100%;margin-top:5px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></label>
+            <label style="color:#334155">Repair Job No.<input id="voucherJobNo" placeholder="Job No." style="display:block;width:100%;margin-top:5px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></label>
+            <label style="color:#334155">Tracking Code<input id="voucherTracking" placeholder="Tracking Code" style="display:block;width:100%;margin-top:5px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></label>
+          </div>
+          <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:570px;color:#14213d"><thead><tr style="background:#0b2d5c;color:#fff"><th style="padding:11px;text-align:center">No</th><th style="padding:11px;text-align:left">Item</th><th style="padding:11px;text-align:right">Qty</th><th style="padding:11px;text-align:right">Unit Price (MMK)</th><th style="padding:11px;text-align:right">Amount (MMK)</th><th class="no-print" style="padding:8px"></th></tr></thead><tbody id="voucherItems"></tbody><tfoot><tr><td colspan="4" style="padding:14px;text-align:right;font-weight:800;border-top:2px solid #0b2d5c">TOTAL (MMK)</td><td id="voucherTotal" style="padding:14px;text-align:right;font-weight:900;border-top:2px solid #0b2d5c">0</td><td class="no-print"></td></tr></tfoot></table></div>
+          <div style="display:flex;justify-content:space-between;gap:24px;margin-top:42px;flex-wrap:wrap"><div style="min-width:180px;border-top:1px solid #94a3b8;padding-top:8px">Customer Signature</div><div style="min-width:180px;border-top:1px solid #94a3b8;padding-top:8px;text-align:right">Authorized Signature</div></div>
+          <p style="text-align:center;color:#64748b;font-size:12px;margin:26px 0 0">Thank you for choosing PTY-TECH · ကျေးဇူးတင်ပါသည်</p>
+        </div>
+      </div>
+\n      <div class="card" id="reportsModule">
         <h3>▥ Reports & Profit · အစီရင်ခံစာ</h3>
         <p class="muted">Repair Job စာရင်းမှ အလိုအလျောက်တွက်ချက်ထားသော အစီရင်ခံစာ။ အချိန်ကာလရွေးပြီး CSV အဖြစ် ဒေါင်းလုဒ်လုပ်နိုင်သည်။</p>
         <div class="grid" style="align-items:end;margin-bottom:16px">
@@ -490,7 +518,47 @@ tbody tr:hover{background:#f4f7ff}
     document.addEventListener("keydown", event => { if (event.key === "Escape") setMenuOpen(false); });
 
 
-    // Show only the section selected from the slide menu.
+
+    let voucherRowCount = 0;
+    function formatVoucherMoney(value) { return Number(value || 0).toLocaleString("en-US"); }
+    function addVoucherItem() {
+      const body = document.getElementById("voucherItems");
+      if (!body) return;
+      const n = ++voucherRowCount;
+      const tr = document.createElement("tr");
+      tr.innerHTML = '<td style="padding:5px;text-align:center;border-bottom:1px solid #e2e8f0">'+n+'</td><td style="padding:5px;border-bottom:1px solid #e2e8f0"><input aria-label="Item '+n+'" placeholder="Item / Service" style="width:100%;min-width:150px;color:#14213d;background:#fff;border:1px solid #cbd5e1"></td><td style="padding:5px;border-bottom:1px solid #e2e8f0"><input class="vqty" type="number" min="0" step="1" value="1" style="width:70px;color:#14213d;background:#fff;border:1px solid #cbd5e1;text-align:right"></td><td style="padding:5px;border-bottom:1px solid #e2e8f0"><input class="vprice" type="number" min="0" step="1" value="0" style="width:125px;color:#14213d;background:#fff;border:1px solid #cbd5e1;text-align:right"></td><td class="vamount" style="padding:10px;text-align:right;border-bottom:1px solid #e2e8f0">0</td><td class="no-print" style="padding:5px"><button type="button" class="secondary vremove" aria-label="Remove item">×</button></td>';
+      body.appendChild(tr);
+      tr.querySelectorAll(".vqty,.vprice").forEach(input => input.addEventListener("input", calculateVoucher));
+      tr.querySelector(".vremove").addEventListener("click", () => { tr.remove(); renumberVoucher(); calculateVoucher(); });
+      calculateVoucher();
+    }
+    function renumberVoucher() { document.querySelectorAll("#voucherItems tr").forEach((tr,i) => tr.cells[0].textContent = i+1); }
+    function calculateVoucher() {
+      let total = 0;
+      document.querySelectorAll("#voucherItems tr").forEach(tr => {
+        const qty = Number(tr.querySelector(".vqty")?.value || 0);
+        const price = Number(tr.querySelector(".vprice")?.value || 0);
+        const amount = qty * price; total += amount;
+        tr.querySelector(".vamount").textContent = formatVoucherMoney(amount);
+      });
+      document.getElementById("voucherTotal").textContent = formatVoucherMoney(total);
+    }
+    function initVoucher() {
+      const date = document.getElementById("voucherDate");
+      if (date && !date.value) date.value = new Date().toISOString().slice(0,10);
+      if (!document.querySelector("#voucherItems tr")) for (let i=0;i<8;i++) addVoucherItem();
+    }
+    document.getElementById("addVoucherRow")?.addEventListener("click", addVoucherItem);
+    document.getElementById("printVoucher")?.addEventListener("click", () => {
+      initVoucher();
+      const printStyle = document.createElement("style");
+      printStyle.id = "voucherPrintStyle";
+      printStyle.textContent = '@media print{body *{visibility:hidden!important}#voucherPrintArea,#voucherPrintArea *{visibility:visible!important}#voucherPrintArea{position:absolute!important;left:0!important;top:0!important;width:100%!important;margin:0!important;padding:12mm!important;border-radius:0!important}#voucherPrintArea input{border:0!important;box-shadow:none!important;padding:3px!important}#voucherPrintArea .no-print{display:none!important}@page{size:A4;margin:8mm}}';
+      document.head.appendChild(printStyle);
+      window.print();
+      printStyle.remove();
+    });
+\n    // Show only the section selected from the slide menu.
     const dashboardViews = {
       overview: ["overviewMetrics"],
       jobs: ["jobList"],
@@ -499,7 +567,7 @@ tbody tr:hover{background:#f4f7ff}
       customers: ["customersModule"],
       inventory: ["inventoryModule"],
       reports: ["reportsModule"],
-      finance: ["financeModule"]
+      finance: ["financeModule"],\n      voucher: ["voucherModule"]
     };
     function showDashboardView(viewName) {
       const targets = dashboardViews[viewName] || dashboardViews.overview;
@@ -511,7 +579,7 @@ tbody tr:hover{background:#f4f7ff}
         document.getElementById("customersModule"),
         document.getElementById("inventoryModule"),
         document.getElementById("reportsModule"),
-        document.getElementById("financeModule")
+        document.getElementById("financeModule"),\n        document.getElementById("voucherModule")
       ].filter(Boolean);
       sections.forEach(section => section.classList.toggle("dashboard-view-hidden", !targets.includes(section.id)));
       workspaceNav?.querySelectorAll("[data-view]").forEach(link => {
@@ -521,7 +589,7 @@ tbody tr:hover{background:#f4f7ff}
         else link.removeAttribute("aria-current");
       });
       const eyebrow = document.querySelector("#dashboard>.card:first-child .view-eyebrow");
-      const labels = {overview:"OVERVIEW",jobs:"REPAIR JOBS",history:"STATUS HISTORY",jobForm:"NEW / EDIT JOB",customers:"CUSTOMERS",inventory:"INVENTORY",reports:"REPORTS & ANALYTICS",finance:"PAYMENTS & EXPENSES"};
+      const labels = {overview:"OVERVIEW",jobs:"REPAIR JOBS",history:"STATUS HISTORY",jobForm:"NEW / EDIT JOB",customers:"CUSTOMERS",inventory:"INVENTORY",reports:"REPORTS & ANALYTICS",finance:"PAYMENTS & EXPENSES",voucher:"NEW VOUCHER"};
       if (eyebrow) eyebrow.textContent = labels[viewName] || labels.overview;
       if (viewName !== "overview") {
         const target = targets.length ? document.getElementById(targets[0]) : null;
@@ -536,7 +604,7 @@ tbody tr:hover{background:#f4f7ff}
         showDashboardView(link.dataset.view);
         if (link.dataset.view === "customers") loadCustomers();
         if (link.dataset.view === "inventory") loadInventory();
-        if (link.dataset.view === "finance") loadFinance();
+        if (link.dataset.view === "finance") loadFinance();\n        if (link.dataset.view === "voucher") initVoucher();
         setMenuOpen(false);
       });
     });
