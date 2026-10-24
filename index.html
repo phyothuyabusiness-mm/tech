@@ -1251,6 +1251,9 @@ tbody tr:hover{background:#f4f7ff}
           document.getElementById("cancelEdit").classList.remove("hidden");
           document.getElementById("editNotice").classList.remove("hidden");
           document.getElementById("editNotice").textContent = "Job No. " + job.job_no + " ကို ပြင်ဆင်နေသည်။ Tracking Code ကို မပြောင်းလဲပါ။";
+          // The job form is hidden while the Repair Jobs view is active.
+          // Switch views first so the populated form becomes visible.
+          showDashboardView("jobForm");
           form.scrollIntoView({ behavior: "smooth", block: "start" });
           document.getElementById("customer_name").focus();
           showMessage("Job No. " + job.job_no + " ကို ပြင်ဆင်နိုင်ပါပြီ။");
