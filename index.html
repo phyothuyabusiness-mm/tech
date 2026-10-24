@@ -631,6 +631,7 @@ tbody tr:hover{background:#f4f7ff}
         voucher_date: document.getElementById("voucherDate").value || new Date().toISOString().slice(0,10),
         customer_name: document.getElementById("voucherCustomer").value.trim(),
         job_no: document.getElementById("voucherJobNo").value.trim() || null,
+        job_id: voucherJobsCache.find(job => String(job.job_no) === document.getElementById("voucherJobNo").value)?.id || null,
         tracking_code: document.getElementById("voucherTracking").value.trim(),
         customer_phone: document.getElementById("voucherPhone").textContent === "—" ? "" : document.getElementById("voucherPhone").textContent,
         customer_address: document.getElementById("voucherAddress").textContent === "—" ? "" : document.getElementById("voucherAddress").textContent,
@@ -652,7 +653,7 @@ tbody tr:hover{background:#f4f7ff}
         const {data,error} = await db.from("repair_vouchers").insert({
           voucher_no:v.voucher_no, voucher_date:v.voucher_date, customer_name:v.customer_name,
           customer_phone:v.customer_phone, customer_address:v.customer_address,
-          repair_job_no:v.job_no ? Number(v.job_no) : null, tracking_code:v.tracking_code,
+          repair_job_no:v.job_no ? Number(v.job_no) : null, repair_job_id:v.job_id, tracking_code:v.tracking_code,
           device:v.device, problem:v.problem, items:v.items, total_amount:v.total, created_by:currentUserId
         }).select("id").single();
         if (error) throw error;
