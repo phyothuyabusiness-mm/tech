@@ -177,7 +177,7 @@ tbody tr:hover{background:#f4f7ff}
     </section>
 
     <section id="dashboard" class="hidden">
-      <div class="card">
+      <div class="card" id="overviewHero">
         <span class="view-eyebrow">OVERVIEW</span><h3>Admin Dashboard</h3>
         <p>PTY-TECH Repair Job Management</p>
         <button id="logout" class="secondary" type="button">
@@ -754,7 +754,7 @@ tbody tr:hover{background:#f4f7ff}
 
     // Show only the section selected from the slide menu.
     const dashboardViews = {
-      overview: ["overviewMetrics"],
+      overview: ["overviewHero", "overviewMetrics"],
       jobs: ["jobList"],
       history: ["historyModule"],
       jobForm: ["jobFormModule"],
@@ -769,6 +769,7 @@ tbody tr:hover{background:#f4f7ff}
     function showDashboardView(viewName) {
       const targets = dashboardViews[viewName] || dashboardViews.overview;
       const sections = [
+        document.getElementById("overviewHero"),
         document.getElementById("overviewMetrics"),
         document.getElementById("jobList"),
         document.getElementById("historyModule"),
