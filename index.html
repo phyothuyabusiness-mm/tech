@@ -138,6 +138,7 @@ input[type=date]{color-scheme:dark}
       <nav class="workspace-nav" aria-label="Workspace sections">
         <a href="#dashboard">◈ Overview · ပင်မ</a>
         <a href="#jobList">▦ Repair Jobs · အလုပ်စာရင်း</a>
+        <a href="#historyModule">↻ Status History · မှတ်တမ်း</a>
         <a href="#jobForm">＋ New / Edit Job · အလုပ်ထည့်ရန်</a>
         <a href="#customersModule">♙ Customers · ဖောက်သည်များ</a>
         <a href="#inventoryModule">▣ Inventory · ပစ္စည်းစာရင်း</a>
@@ -147,6 +148,20 @@ input[type=date]{color-scheme:dark}
         <h3>♙ Customers · ဖောက်သည်များ</h3>
         <p class="muted">Customer စာရင်းကို Repair Jobs ထဲရှိ customer အချက်အလက်များမှ စုစည်းကြည့်ရှုနိုင်ရန်။</p>
         <div class="module-note">Customer အချက်အလက်များကို လက်ရှိ repair_jobs မှသာ ပြသမည်။ သီးခြား Customer Database မရှိသေးသဖြင့် ဒီဇိုင်းအဆင့်တွင် အချက်အလက်အသစ် မဖန်တီးထားပါ။ Job list ထဲရှိ Customer အမည်/ဖုန်းဖြင့် ရှာနိုင်ပါသည်။</div>
+      </div>
+      <div class="card" id="historyModule">
+        <h3>↻ Repair Status History · အခြေအနေမှတ်တမ်း</h3>
+        <p class="muted">Repair Job တစ်ခုချင်းစီ၏ Status ပြောင်းလဲမှု၊ ပြောင်းလဲသည့်အချိန်နှင့် Admin ID ကို စစ်ဆေးနိုင်သည်။</p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0">
+          <button type="button" class="secondary" id="refreshHistory">↻ မှတ်တမ်းပြန်ဖတ်ရန်</button>
+          <span class="muted" id="historyCount" aria-live="polite">မှတ်တမ်းဖတ်ရန် အသင့်</span>
+        </div>
+        <div class="table-wrap">
+          <table style="min-width:760px">
+            <thead><tr><th>Job No.</th><th>ယခင် Status</th><th>ပြောင်းလဲ Status</th><th>ပြောင်းလဲချိန်</th><th>Admin User ID</th></tr></thead>
+            <tbody id="statusHistoryRows"><tr><td colspan="5">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody>
+          </table>
+        </div>
       </div>
       <div class="card" id="inventoryModule">
         <h3>▣ Inventory · Spare Parts</h3>
@@ -382,9 +397,80 @@ input[type=date]{color-scheme:dark}
       currentUserId = user.id;
       showDashboard(true);
       await loadJobs();
+      await loadStatusHistory();
 
       return true;
     }
+
+    async function loadStatusHistory() {
+      const body = document.getElementById("statusHistoryRows");
+      const count = document.getElementById("historyCount");
+      if (!body || !count) return;
+      if (!db || !currentUserId) {
+        count.textContent = "Admin Login လိုအပ်သည်";
+        return;
+      }
+
+      body.replaceChildren();
+      count.textContent = "မှတ်တမ်းဖတ်နေသည်...";
+      const { data, error } = await db
+        .from("repair_status_history")
+        .select("job_no, old_status, new_status, changed_at, changed_by")
+        .order("changed_at", { ascending: false })
+        .limit(100);
+
+      if (error) {
+        count.textContent = "မှတ်တမ်းဖတ်မရပါ";
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 5;
+        cell.textContent = "Status History ဖတ်မရပါ: " + error.message;
+        row.appendChild(cell);
+        body.appendChild(row);
+        return;
+      }
+
+      const labels = {
+        received: "လက်ခံရရှိ",
+        diagnosing: "စစ်ဆေးနေဆဲ",
+        in_progress: "ပြုပြင်နေဆဲ",
+        waiting_parts: "ပစ္စည်းစောင့်ဆိုင်းနေ",
+        completed: "ပြုပြင်ပြီး",
+        ready_for_pickup: "လာရောက်ယူနိုင်ပါပြီ",
+        delivered: "ပစ္စည်းပြန်လည်ပေးအပ်ပြီး",
+        cancelled: "ပယ်ဖျက်ထား"
+      };
+      const rows = data || [];
+      count.textContent = "ပြသထားသော မှတ်တမ်း " + rows.length + " ခု (နောက်ဆုံး 100 ခုအထိ)";
+      if (!rows.length) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 5;
+        cell.textContent = "Status ပြောင်းလဲမှုမှတ်တမ်း မရှိသေးပါ။";
+        row.appendChild(cell);
+        body.appendChild(row);
+        return;
+      }
+
+      for (const item of rows) {
+        const row = document.createElement("tr");
+        const values = [
+          item.job_no ?? "—",
+          labels[item.old_status] || item.old_status || "—",
+          labels[item.new_status] || item.new_status || "—",
+          item.changed_at ? new Date(item.changed_at).toLocaleString("en-GB") : "—",
+          item.changed_by || "—"
+        ];
+        for (const value of values) {
+          const cell = document.createElement("td");
+          cell.textContent = String(value);
+          row.appendChild(cell);
+        }
+        body.appendChild(row);
+      }
+    }
+
+    document.getElementById("refreshHistory")?.addEventListener("click", loadStatusHistory);
 
     async function loadJobs() {
       if (!db || !currentUserId) return;
