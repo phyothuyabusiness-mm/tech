@@ -278,7 +278,7 @@ tbody tr:hover{background:#f4f7ff}
       <div class="card" id="voucherModule">
         <div style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap">
           <h3 style="margin:0">▤ New Voucher · ပြုပြင်စရိတ်ဘောင်ချာ</h3>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="secondary" id="addVoucherRow">＋ Item ထည့်ရန်</button><button type="button" class="secondary" id="saveVoucher">💾 ဘောင်ချာသိမ်းမည်</button><button type="button" id="printVoucher">🖨 Print Voucher</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="secondary" id="addVoucherRow">＋ Item ထည့်ရန်</button><button type="button" class="secondary" id="saveVoucher">💾 ဘောင်ချာသိမ်းမည်</button><button type="button" id="saveVoucherPdf">📄 PDF သိမ်းရန်</button><button type="button" id="saveVoucherImage">🖼 Image သိမ်းရန်</button><button type="button" class="secondary" id="printVoucher">🖨 Print</button></div>
         </div>
         <p class="muted">PTY-TECH အမှတ်တံဆိပ်ပါ ဘောင်ချာကို ဖြည့်ပြီး Print ထုတ်နိုင်ပါသည်။ Amount နှင့် Total ကို အလိုအလျောက်တွက်ချက်ပေးသည်။</p>
         <div id="voucherPrintArea" style="background:#fff;color:#14213d;border-radius:14px;padding:26px;margin-top:18px">
@@ -742,6 +742,33 @@ tbody tr:hover{background:#f4f7ff}
     document.getElementById("refreshVoucherHistory")?.addEventListener("click",loadVoucherHistory);
     document.getElementById("voucherHistorySearch")?.addEventListener("input",()=>renderVoucherHistory(voucherHistoryCache));
     document.getElementById("addVoucherRow")?.addEventListener("click", addVoucherItem);
+    document.getElementById("saveVoucherPdf")?.addEventListener("click", () => document.getElementById("printVoucher")?.click());
+    document.getElementById("saveVoucherImage")?.addEventListener("click", async () => {
+      const area = document.getElementById("voucherPrintArea");
+      const button = document.getElementById("saveVoucherImage");
+      if (!area) return;
+      setButtonBusy(button, true, "Image ပြုလုပ်နေသည်...");
+      try {
+        if (!window.html2canvas) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
+            script.onload = resolve;
+            script.onerror = () => reject(new Error("Image library မဖွင့်နိုင်ပါ။ Internet ချိတ်ဆက်မှုကို စစ်ပါ။"));
+            document.head.appendChild(script);
+          });
+        }
+        const canvas = await window.html2canvas(area, {scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false});
+        const link = document.createElement("a");
+        const voucherNo = (document.getElementById("voucherNumber")?.value || "PTY-TECH-Voucher").replace(/[^a-z0-9_-]/gi, "_");
+        link.download = voucherNo + ".png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        showMessage("ဘောင်ချာ Image (PNG) ကို သိမ်းပြီးပါပြီ။");
+      } catch (e) { showMessage("Image သိမ်းမရပါ: " + e.message, true); }
+      finally { setButtonBusy(button, false); }
+    });
+
     document.getElementById("printVoucher")?.addEventListener("click", () => {
       initVoucher();
       const printStyle = document.createElement("style");
