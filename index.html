@@ -183,7 +183,7 @@ tbody tr:hover{background:#f4f7ff}
         </button>
       </div>
 
-      <div class="module-strip" aria-label="Workspace overview">
+      <div class="module-strip dashboard-view-hidden" id="overviewMetrics" aria-label="Workspace overview">
         <div class="module-tile"><div class="tile-icon">▦</div><strong id="metricTotal">—</strong><span>Total Repair Jobs · စုစုပေါင်း</span></div>
         <div class="module-tile"><div class="tile-icon">◷</div><strong id="metricActive">—</strong><span>In Progress · လုပ်ဆောင်ဆဲ</span></div>
         <div class="module-tile"><div class="tile-icon">✓</div><strong id="metricCompleted">—</strong><span>Completed · ပြုပြင်ပြီး</span></div>
@@ -448,6 +448,7 @@ tbody tr:hover{background:#f4f7ff}
     function showDashboardView(viewName) {
       const targets = dashboardViews[viewName] || dashboardViews.overview;
       const sections = [
+        document.getElementById("overviewMetrics"),
         document.getElementById("jobList"),
         document.getElementById("historyModule"),
         document.getElementById("jobFormModule"),
