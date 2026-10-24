@@ -415,7 +415,7 @@ input[type=date]{color-scheme:dark}
       count.textContent = "မှတ်တမ်းဖတ်နေသည်...";
       const { data, error } = await db
         .from("repair_status_history")
-        .select("job_no, old_status, new_status, changed_at, changed_by")
+        .select("repair_job_id, old_status, new_status, changed_at, changed_by, repair_jobs(job_no)")
         .order("changed_at", { ascending: false })
         .limit(100);
 
@@ -455,7 +455,7 @@ input[type=date]{color-scheme:dark}
       for (const item of rows) {
         const row = document.createElement("tr");
         const values = [
-          item.job_no ?? "—",
+          item.repair_jobs?.job_no ?? "—",
           labels[item.old_status] || item.old_status || "—",
           labels[item.new_status] || item.new_status || "—",
           item.changed_at ? new Date(item.changed_at).toLocaleString("en-GB") : "—",
