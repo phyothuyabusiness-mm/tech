@@ -209,8 +209,10 @@ tbody tr:hover{background:#f4f7ff}
       </nav>
       <div class="card" id="customersModule">
         <h3>♙ Customers · ဖောက်သည်များ</h3>
-        <p class="muted">Customer စာရင်းကို Repair Jobs ထဲရှိ customer အချက်အလက်များမှ စုစည်းကြည့်ရှုနိုင်ရန်။</p>
-        <div class="module-note">Customer အချက်အလက်များကို လက်ရှိ repair_jobs မှသာ ပြသမည်။ သီးခြား Customer Database မရှိသေးသဖြင့် ဒီဇိုင်းအဆင့်တွင် အချက်အလက်အသစ် မဖန်တီးထားပါ။ Job list ထဲရှိ Customer အမည်/ဖုန်းဖြင့် ရှာနိုင်ပါသည်။</div>
+        <p class="muted">Repair Jobs ထဲရှိ Customer အချက်အလက်များကို ဖုန်းနံပါတ်အလိုက် စုစည်းပြသထားသည်။</p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0"><button type="button" class="secondary" id="refreshCustomers">↻ Customer စာရင်းပြန်ဖတ်ရန်</button><span class="muted" id="customerCount">စာရင်းဖတ်ရန် အသင့်</span></div>
+        <label for="customerSearch">Customer ရှာရန် · အမည် / ဖုန်း</label><input id="customerSearch" type="search" placeholder="Customer အမည် သို့မဟုတ် ဖုန်းနံပါတ်..." autocomplete="off">
+        <div class="table-wrap"><table style="min-width:720px"><thead><tr><th>Customer Name</th><th>Phone</th><th>Repair Jobs</th><th>နောက်ဆုံးလက်ခံရက်</th></tr></thead><tbody id="customerRows"><tr><td colspan="4">စာရင်းဖတ်ရန် အသင့်</td></tr></tbody></table></div>
       </div>
       <div class="card" id="historyModule">
         <h3>↻ Repair Status History · အခြေအနေမှတ်တမ်း</h3>
@@ -227,9 +229,12 @@ tbody tr:hover{background:#f4f7ff}
         </div>
       </div>
       <div class="card" id="inventoryModule">
-        <h3>▣ Inventory · Spare Parts</h3>
-        <p class="muted">Spare parts, stock quantity, minimum stock, purchase cost နှင့် stock movement စီမံခန့်ခွဲမှု။</p>
-        <div class="module-note">Inventory ကို အမှန်တကယ်အသုံးပြုရန် Supabase တွင် inventory_items နှင့် stock_movements table များ၊ RLS policies နှင့် လုပ်ဆောင်ချက်များကို ထပ်တိုးရန်လိုအပ်သည်။ လက်ရှိ Database ကို မပြောင်းဘဲထားထားပြီး stock အတုအယောင် မပြသထားပါ။</div>
+        <h3>▣ Inventory · Spare Parts</h3><p class="muted">ပစ္စည်းစာရင်း၊ လက်ကျန်နှင့် အနည်းဆုံးလက်ကျန်သတိပေးချက်။</p>
+        <div class="module-strip"><div class="module-tile"><div class="tile-icon">▣</div><strong id="inventoryItemCount">—</strong><span>ပစ္စည်းအမျိုးအစား</span></div><div class="module-tile"><div class="tile-icon">↓</div><strong id="inventoryLowCount">—</strong><span>လက်ကျန်နည်းနေသောပစ္စည်း</span></div></div>
+        <form id="inventoryForm"><div class="grid"><div><label for="inventoryName">ပစ္စည်းအမည် *</label><input id="inventoryName" required placeholder="ဥပမာ - IGBT 40N60"></div><div><label for="inventorySku">Part No. / SKU</label><input id="inventorySku" placeholder="Part Number"></div><div><label for="inventoryQty">လက်ကျန်အရေအတွက် *</label><input id="inventoryQty" type="number" min="0" step="1" value="0" required></div><div><label for="inventoryMin">အနည်းဆုံးလက်ကျန်</label><input id="inventoryMin" type="number" min="0" step="1" value="0"></div><div><label for="inventoryCost">တစ်ခုချင်း ဝယ်ဈေး (MMK)</label><input id="inventoryCost" type="number" min="0" step="1" value="0"></div><div><label for="inventoryLocation">သိုလှောင်နေရာ</label><input id="inventoryLocation" placeholder="ဥပမာ - Shelf A1"></div></div><button type="submit" id="inventorySubmit">＋ ပစ္စည်းသိမ်းမည်</button> <button type="button" class="secondary" id="refreshInventory">↻ စာရင်းပြန်ဖတ်ရန်</button></form>
+        <p id="inventoryMessage" class="muted" aria-live="polite">Supabase tables တည်ဆောက်ပြီးနောက် ပစ္စည်းများကို သိမ်းဆည်းနိုင်မည်။</p>
+        <label for="inventorySearch">ပစ္စည်းရှာရန်</label><input id="inventorySearch" type="search" placeholder="ပစ္စည်းအမည် / Part No..." autocomplete="off">
+        <div class="table-wrap"><table style="min-width:900px"><thead><tr><th>ပစ္စည်းအမည်</th><th>Part No. / SKU</th><th>လက်ကျန်</th><th>အနည်းဆုံးလက်ကျန်</th><th>တစ်ခုချင်းဝယ်ဈေး</th><th>သိုလှောင်နေရာ</th><th>အခြေအနေ</th></tr></thead><tbody id="inventoryRows"><tr><td colspan="7">Supabase Inventory tables တည်ဆောက်ရန် လိုအပ်သည်။</td></tr></tbody></table></div>
       </div>
       <div class="card" id="reportsModule">
         <h3>▥ Reports & Analytics · အစီရင်ခံစာ</h3>
@@ -483,6 +488,8 @@ tbody tr:hover{background:#f4f7ff}
       link.addEventListener("click", event => {
         event.preventDefault();
         showDashboardView(link.dataset.view);
+        if (link.dataset.view === "customers") loadCustomers();
+        if (link.dataset.view === "inventory") loadInventory();
         setMenuOpen(false);
       });
     });
@@ -638,6 +645,65 @@ tbody tr:hover{background:#f4f7ff}
     }
 
     document.getElementById("refreshHistory")?.addEventListener("click", loadStatusHistory);
+
+    let customerRecords = [];
+    async function loadCustomers() {
+      const body = document.getElementById("customerRows"), count = document.getElementById("customerCount");
+      if (!body || !count) return;
+      if (!db || !currentUserId) { count.textContent = "Admin Login လိုအပ်သည်"; return; }
+      count.textContent = "ဖတ်နေသည်...";
+      const {data,error} = await db.from("repair_jobs").select("customer_name,customer_phone,received_at").order("received_at",{ascending:false}).limit(1000);
+      if(error){count.textContent="ဖတ်မရပါ: "+error.message;return;}
+      const grouped = new Map();
+      for(const job of data||[]){
+        const name=String(job.customer_name||"").trim(), phone=String(job.customer_phone||"").trim();
+        if(!name&&!phone) continue;
+        const key=phone ? "p:"+phone.replace(/[^0-9+]/g,"") : "n:"+name.toLowerCase();
+        if(!grouped.has(key)) grouped.set(key,{name,phone,jobs:0,latest:job.received_at||""});
+        const item=grouped.get(key); item.jobs++;
+        if(!item.name&&name)item.name=name; if(!item.phone&&phone)item.phone=phone;
+        if(job.received_at&&(!item.latest||job.received_at>item.latest))item.latest=job.received_at;
+      }
+      customerRecords=[...grouped.values()].sort((a,b)=>a.name.localeCompare(b.name)); renderCustomers();
+    }
+    function renderCustomers(){
+      const body=document.getElementById("customerRows"), count=document.getElementById("customerCount");
+      if(!body||!count)return;
+      const term=(document.getElementById("customerSearch")?.value||"").trim().toLowerCase();
+      const list=customerRecords.filter(x=>x.name.toLowerCase().includes(term)||x.phone.toLowerCase().includes(term));
+      body.replaceChildren();
+      if(!list.length){const row=document.createElement("tr"),cell=document.createElement("td");cell.colSpan=4;cell.textContent="Customer စာရင်းမရှိပါ။";row.appendChild(cell);body.appendChild(row);}
+      for(const x of list){const row=document.createElement("tr");for(const v of [x.name||"—",x.phone||"—",x.jobs,x.latest?formatDate(x.latest):"—"]){const cell=document.createElement("td");cell.textContent=String(v);row.appendChild(cell);}body.appendChild(row);}
+      count.textContent="Customer "+list.length+" ဦး ပြသထားသည်";
+    }
+    document.getElementById("refreshCustomers")?.addEventListener("click",loadCustomers);
+    document.getElementById("customerSearch")?.addEventListener("input",renderCustomers);
+    async function loadInventory(){
+      const body=document.getElementById("inventoryRows"), msg=document.getElementById("inventoryMessage");
+      if(!body||!msg)return;
+      if(!db||!currentUserId){msg.textContent="Admin Login လိုအပ်သည်";return;}
+      const {data,error}=await db.from("inventory_items").select("id,name,sku,quantity,min_quantity,unit_cost,location").order("name").limit(1000);
+      if(error){msg.textContent="Supabase inventory_items table/RLS setup လိုအပ်သည်: "+error.message;return;}
+      const items=data||[], term=(document.getElementById("inventorySearch")?.value||"").toLowerCase().trim();
+      document.getElementById("inventoryItemCount").textContent=String(items.length);
+      document.getElementById("inventoryLowCount").textContent=String(items.filter(x=>Number(x.quantity)<=Number(x.min_quantity)).length);
+      const list=items.filter(x=>String(x.name||"").toLowerCase().includes(term)||String(x.sku||"").toLowerCase().includes(term));
+      body.replaceChildren();
+      if(!list.length){const row=document.createElement("tr"),cell=document.createElement("td");cell.colSpan=7;cell.textContent="ပစ္စည်းစာရင်းမရှိပါ။";row.appendChild(cell);body.appendChild(row);}
+      for(const x of list){const row=document.createElement("tr"),low=Number(x.quantity)<=Number(x.min_quantity);for(const v of [x.name,x.sku||"—",x.quantity,x.min_quantity,formatMMK(x.unit_cost),x.location||"—",low?"⚠ လက်ကျန်နည်း":"ပုံမှန်"]){const cell=document.createElement("td");cell.textContent=String(v??"—");row.appendChild(cell);}body.appendChild(row);}
+      msg.textContent="ပစ္စည်း "+items.length+" မျိုး ဖတ်ပြီးပါပြီ။";
+    }
+    document.getElementById("refreshInventory")?.addEventListener("click",loadInventory);
+    document.getElementById("inventorySearch")?.addEventListener("input",loadInventory);
+    document.getElementById("inventoryForm")?.addEventListener("submit",async event=>{
+      event.preventDefault();const msg=document.getElementById("inventoryMessage");
+      if(!db||!currentUserId){msg.textContent="Admin Login ပြန်ဝင်ပါ။";return;}
+      const payload={name:document.getElementById("inventoryName").value.trim(),sku:document.getElementById("inventorySku").value.trim()||null,quantity:Number(document.getElementById("inventoryQty").value),min_quantity:Number(document.getElementById("inventoryMin").value||0),unit_cost:Number(document.getElementById("inventoryCost").value||0),location:document.getElementById("inventoryLocation").value.trim()||null};
+      const btn=document.getElementById("inventorySubmit");btn.disabled=true;
+      try{const {error}=await db.from("inventory_items").insert(payload);if(error)throw error;document.getElementById("inventoryForm").reset();document.getElementById("inventoryQty").value="0";document.getElementById("inventoryMin").value="0";document.getElementById("inventoryCost").value="0";msg.textContent="ပစ္စည်းသိမ်းပြီးပါပြီ။";await loadInventory();}
+      catch(error){msg.textContent="သိမ်းမရပါ: "+error.message;}
+      finally{btn.disabled=false;}
+    });
 
     async function loadJobs() {
       if (!db || !currentUserId) return;
