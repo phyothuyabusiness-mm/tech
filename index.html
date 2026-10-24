@@ -263,7 +263,7 @@ input[type=date]{color-scheme:dark}
           <table>
             <thead>
               <tr>
-                <th>Delete</th>
+                <th>🗑 Delete</th>
                 <th>Job No.</th>
                 <th>Customer</th>
                 <th>စက်အမျိုးအစား</th>
@@ -608,7 +608,7 @@ input[type=date]{color-scheme:dark}
         const deleteButton = document.createElement("button");
         deleteButton.type = "button";
         deleteButton.className = "danger";
-        deleteButton.textContent = "Delete";
+        deleteButton.textContent = "🗑 Delete";
         deleteButton.setAttribute("aria-label", "Delete Job No. " + job.job_no);
         deleteButton.addEventListener("click", async () => {
           if (!db || !currentUserId) {
