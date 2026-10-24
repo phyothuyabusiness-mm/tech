@@ -742,7 +742,43 @@ tbody tr:hover{background:#f4f7ff}
     document.getElementById("refreshVoucherHistory")?.addEventListener("click",loadVoucherHistory);
     document.getElementById("voucherHistorySearch")?.addEventListener("input",()=>renderVoucherHistory(voucherHistoryCache));
     document.getElementById("addVoucherRow")?.addEventListener("click", addVoucherItem);
-    document.getElementById("saveVoucherPdf")?.addEventListener("click", () => document.getElementById("printVoucher")?.click());
+    document.getElementById("saveVoucherPdf")?.addEventListener("click", async () => {
+      const area = document.getElementById("voucherPrintArea");
+      const button = document.getElementById("saveVoucherPdf");
+      if (!area) return;
+      setButtonBusy(button, true, "PDF ပြုလုပ်နေသည်...");
+      try {
+        const loadScript = (src) => new Promise((resolve, reject) => {
+          const existing = [...document.scripts].find(s => s.src === src);
+          if (existing) {
+            if (existing.dataset.loaded === "true") return resolve();
+            existing.addEventListener("load", resolve, { once: true });
+            existing.addEventListener("error", () => reject(new Error("PDF library မဖွင့်နိုင်ပါ။ Internet ချိတ်ဆက်မှုကို စစ်ပါ။")), { once: true });
+            return;
+          }
+          const script = document.createElement("script");
+          script.src = src;
+          script.onload = () => { script.dataset.loaded = "true"; resolve(); };
+          script.onerror = () => reject(new Error("PDF library မဖွင့်နိုင်ပါ။ Internet ချိတ်ဆက်မှုကို စစ်ပါ။"));
+          document.head.appendChild(script);
+        });
+        if (!window.html2canvas) await loadScript("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js");
+        if (!window.jspdf?.jsPDF) await loadScript("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+        const canvas = await window.html2canvas(area, { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false });
+        const pdf = new window.jspdf.jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+        const margin = 8;
+        const pageW = pdf.internal.pageSize.getWidth() - margin * 2;
+        const pageH = pdf.internal.pageSize.getHeight() - margin * 2;
+        const ratio = Math.min(pageW / canvas.width, pageH / canvas.height);
+        const imgW = canvas.width * ratio;
+        const imgH = canvas.height * ratio;
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", (pdf.internal.pageSize.getWidth() - imgW) / 2, margin, imgW, imgH, undefined, "FAST");
+        const voucherNo = (document.getElementById("voucherNumber")?.value || "PTY-TECH-Voucher").replace(/[^a-z0-9_-]/gi, "_");
+        pdf.save(voucherNo + ".pdf");
+        showMessage("ဘောင်ချာ PDF ကို Download ပြုလုပ်နေပါပြီ။");
+      } catch (e) { showMessage("PDF သိမ်းမရပါ: " + e.message, true); }
+      finally { setButtonBusy(button, false); }
+    });
     document.getElementById("saveVoucherImage")?.addEventListener("click", async () => {
       const area = document.getElementById("voucherPrintArea");
       const button = document.getElementById("saveVoucherImage");
