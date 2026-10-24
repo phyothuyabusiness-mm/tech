@@ -299,7 +299,8 @@ tbody tr:hover{background:#f4f7ff}
           <p style="text-align:center;color:#64748b;font-size:12px;margin:26px 0 0">Thank you for choosing PTY-TECH · ကျေးဇူးတင်ပါသည်</p>
         </div>
       </div>
-\n      <div class="card" id="reportsModule">
+
+      <div class="card" id="reportsModule">
         <h3>▥ Reports & Profit · အစီရင်ခံစာ</h3>
         <p class="muted">Repair Job စာရင်းမှ အလိုအလျောက်တွက်ချက်ထားသော အစီရင်ခံစာ။ အချိန်ကာလရွေးပြီး CSV အဖြစ် ဒေါင်းလုဒ်လုပ်နိုင်သည်။</p>
         <div class="grid" style="align-items:end;margin-bottom:16px">
@@ -558,7 +559,8 @@ tbody tr:hover{background:#f4f7ff}
       window.print();
       printStyle.remove();
     });
-\n    // Show only the section selected from the slide menu.
+
+    // Show only the section selected from the slide menu.
     const dashboardViews = {
       overview: ["overviewMetrics"],
       jobs: ["jobList"],
@@ -567,7 +569,8 @@ tbody tr:hover{background:#f4f7ff}
       customers: ["customersModule"],
       inventory: ["inventoryModule"],
       reports: ["reportsModule"],
-      finance: ["financeModule"],\n      voucher: ["voucherModule"]
+      finance: ["financeModule"],
+      voucher: ["voucherModule"]
     };
     function showDashboardView(viewName) {
       const targets = dashboardViews[viewName] || dashboardViews.overview;
@@ -579,7 +582,8 @@ tbody tr:hover{background:#f4f7ff}
         document.getElementById("customersModule"),
         document.getElementById("inventoryModule"),
         document.getElementById("reportsModule"),
-        document.getElementById("financeModule"),\n        document.getElementById("voucherModule")
+        document.getElementById("financeModule"),
+        document.getElementById("voucherModule")
       ].filter(Boolean);
       sections.forEach(section => section.classList.toggle("dashboard-view-hidden", !targets.includes(section.id)));
       workspaceNav?.querySelectorAll("[data-view]").forEach(link => {
@@ -604,7 +608,8 @@ tbody tr:hover{background:#f4f7ff}
         showDashboardView(link.dataset.view);
         if (link.dataset.view === "customers") loadCustomers();
         if (link.dataset.view === "inventory") loadInventory();
-        if (link.dataset.view === "finance") loadFinance();\n        if (link.dataset.view === "voucher") initVoucher();
+        if (link.dataset.view === "finance") loadFinance();
+        if (link.dataset.view === "voucher") initVoucher();
         setMenuOpen(false);
       });
     });
