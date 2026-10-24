@@ -208,6 +208,7 @@ tbody tr:hover{background:#f4f7ff}
         <a href="#reportsModule" data-view="reports">▥ Reports · အစီရင်ခံစာ</a>
         <a href="#financeModule" data-view="finance">₭ Payments & Expenses · ငွေစာရင်း</a>
         <a href="#voucherModule" data-view="voucher">▤ New Voucher · ဘောင်ချာ</a>
+        <a href="#voucherHistoryModule" data-view="voucherHistory">▤ Voucher History · ဘောင်ချာမှတ်တမ်း</a>
       </nav>
       <div class="card" id="customersModule">
         <h3>♙ Customers · ဖောက်သည်များ</h3>
@@ -276,7 +277,7 @@ tbody tr:hover{background:#f4f7ff}
       <div class="card" id="voucherModule">
         <div style="display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap">
           <h3 style="margin:0">▤ New Voucher · ပြုပြင်စရိတ်ဘောင်ချာ</h3>
-          <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="secondary" id="addVoucherRow">＋ Item ထည့်ရန်</button><button type="button" id="printVoucher">🖨 Print Voucher</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="secondary" id="addVoucherRow">＋ Item ထည့်ရန်</button><button type="button" class="secondary" id="saveVoucher">💾 ဘောင်ချာသိမ်းမည်</button><button type="button" id="printVoucher">🖨 Print Voucher</button></div>
         </div>
         <p class="muted">PTY-TECH အမှတ်တံဆိပ်ပါ ဘောင်ချာကို ဖြည့်ပြီး Print ထုတ်နိုင်ပါသည်။ Amount နှင့် Total ကို အလိုအလျောက်တွက်ချက်ပေးသည်။</p>
         <div id="voucherPrintArea" style="background:#fff;color:#14213d;border-radius:14px;padding:26px;margin-top:18px">
@@ -300,6 +301,14 @@ tbody tr:hover{background:#f4f7ff}
           <div style="display:flex;justify-content:space-between;gap:24px;margin-top:42px;flex-wrap:wrap"><div style="min-width:180px;border-top:1px solid #94a3b8;padding-top:8px">Customer Signature</div><div style="min-width:180px;border-top:1px solid #94a3b8;padding-top:8px;text-align:right">Authorized Signature</div></div>
           <p style="text-align:center;color:#64748b;font-size:12px;margin:26px 0 0">Thank you for choosing PTY-TECH · ကျေးဇူးတင်ပါသည်</p>
         </div>
+      </div>
+
+      <div class="card" id="voucherHistoryModule">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h3 style="margin:0">▤ Voucher History · ဘောင်ချာမှတ်တမ်း</h3><button type="button" class="secondary" id="refreshVoucherHistory">↻ မှတ်တမ်းပြန်ဖတ်ရန်</button></div>
+        <p class="muted">ဘောင်ချာနံပါတ်၊ Customer အမည်၊ ဖုန်းနံပါတ်၊ Job No. ဖြင့် ရှာဖွေပြီး ပြန်ဖွင့်/ပြန်ထုတ်နိုင်သည်။</p>
+        <label for="voucherHistorySearch">ဘောင်ချာမှတ်တမ်း ရှာရန်</label><input id="voucherHistorySearch" type="search" placeholder="Voucher No, Customer, Phone, Job No..." autocomplete="off">
+        <p id="voucherHistoryCount" class="muted">မှတ်တမ်းဖတ်ရန် အသင့်</p>
+        <div class="table-wrap"><table style="min-width:850px"><thead><tr><th>Voucher No.</th><th>ရက်စွဲ</th><th>Customer</th><th>ဖုန်း</th><th>Job No.</th><th>Total (MMK)</th><th>လုပ်ဆောင်ချက်</th></tr></thead><tbody id="voucherHistoryRows"><tr><td colspan="7">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody></table></div>
       </div>
 
       <div class="card" id="reportsModule">
@@ -594,6 +603,90 @@ tbody tr:hover{background:#f4f7ff}
       }
       if (!document.querySelector("#voucherItems tr")) for (let i=0;i<8;i++) addVoucherItem();
     }
+    let voucherHistoryCache = [];
+    function getVoucherSnapshot() {
+      const items = [...document.querySelectorAll("#voucherItems tr")].map(tr => ({
+        item: tr.querySelector('input[aria-label^="Item"]')?.value || "",
+        qty: Number(tr.querySelector(".vqty")?.value || 0),
+        unit_price: Number(tr.querySelector(".vprice")?.value || 0),
+        amount: Number(tr.querySelector(".vqty")?.value || 0) * Number(tr.querySelector(".vprice")?.value || 0)
+      })).filter(item => item.item.trim());
+      return {
+        voucher_no: document.getElementById("voucherNumber").value.trim(),
+        voucher_date: document.getElementById("voucherDate").value || new Date().toISOString().slice(0,10),
+        customer_name: document.getElementById("voucherCustomer").value.trim(),
+        job_no: document.getElementById("voucherJobNo").value.trim() || null,
+        tracking_code: document.getElementById("voucherTracking").value.trim(),
+        customer_phone: document.getElementById("voucherPhone").textContent === "—" ? "" : document.getElementById("voucherPhone").textContent,
+        customer_address: document.getElementById("voucherAddress").textContent === "—" ? "" : document.getElementById("voucherAddress").textContent,
+        device: document.getElementById("voucherDevice").textContent === "—" ? "" : document.getElementById("voucherDevice").textContent,
+        problem: document.getElementById("voucherProblem").textContent === "—" ? "" : document.getElementById("voucherProblem").textContent,
+        items,
+        total: items.reduce((sum,item) => sum + item.amount, 0)
+      };
+    }
+    document.getElementById("saveVoucher")?.addEventListener("click", async () => {
+      const button = document.getElementById("saveVoucher");
+      if (!db || !currentUserId) { showMessage("ဘောင်ချာသိမ်းရန် Admin Login ဝင်ပါ။", true); return; }
+      const v = getVoucherSnapshot();
+      if (!v.customer_name) { showMessage("ဘောင်ချာသိမ်းရန် Customer အမည် ဖြည့်ပါ။", true); document.getElementById("voucherCustomer").focus(); return; }
+      if (!v.items.length) { showMessage("ဘောင်ချာတွင် Item / Service အနည်းဆုံးတစ်ခု ဖြည့်ပါ။", true); return; }
+      if (!v.voucher_no) { v.voucher_no = "V-" + Date.now().toString().slice(-8); document.getElementById("voucherNumber").value = v.voucher_no; }
+      setButtonBusy(button, true, "သိမ်းနေသည်...");
+      try {
+        const {data,error} = await db.from("repair_vouchers").insert({
+          voucher_no:v.voucher_no, voucher_date:v.voucher_date, customer_name:v.customer_name,
+          customer_phone:v.customer_phone, customer_address:v.customer_address,
+          repair_job_no:v.job_no ? Number(v.job_no) : null, tracking_code:v.tracking_code,
+          device:v.device, problem:v.problem, items:v.items, total_amount:v.total, created_by:currentUserId
+        }).select("id").single();
+        if (error) throw error;
+        showMessage("ဘောင်ချာ " + v.voucher_no + " ကို History ထဲ သိမ်းပြီးပါပြီ။");
+        await loadVoucherHistory();
+      } catch (error) {
+        showMessage("ဘောင်ချာသိမ်းမရပါ။ Supabase SQL Table/RLS ကို စစ်ပါ။ " + error.message, true);
+      } finally { setButtonBusy(button, false); }
+    });
+    function renderVoucherHistory(rows) {
+      const body = document.getElementById("voucherHistoryRows");
+      const count = document.getElementById("voucherHistoryCount");
+      if (!body || !count) return;
+      const query = (document.getElementById("voucherHistorySearch")?.value || "").trim().toLowerCase();
+      const filtered = rows.filter(v => [v.voucher_no,v.customer_name,v.customer_phone,v.repair_job_no,v.tracking_code].some(x => String(x ?? "").toLowerCase().includes(query)));
+      body.replaceChildren();
+      count.textContent = "ဘောင်ချာ " + filtered.length + " ခု" + (query ? " · ရှာဖွေမှုရလဒ်" : "");
+      if (!filtered.length) { const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=7;td.textContent=query?"ရှာဖွေမှုနှင့် ကိုက်ညီသော ဘောင်ချာမရှိပါ။":"ဘောင်ချာမှတ်တမ်း မရှိသေးပါ။";tr.appendChild(td);body.appendChild(tr);return; }
+      for (const v of filtered) {
+        const tr=document.createElement("tr");
+        [v.voucher_no,formatDate(v.voucher_date),v.customer_name,v.customer_phone||"—",v.repair_job_no??"—",formatMMK(v.total_amount)].forEach(value=>{const td=document.createElement("td");td.textContent=String(value??"—");tr.appendChild(td);});
+        const td=document.createElement("td"),btn=document.createElement("button");btn.type="button";btn.textContent="ကြည့် / ပြန်ထုတ်";btn.addEventListener("click",()=>openSavedVoucher(v));td.appendChild(btn);tr.appendChild(td);body.appendChild(tr);
+      }
+    }
+    async function loadVoucherHistory() {
+      const count=document.getElementById("voucherHistoryCount"),body=document.getElementById("voucherHistoryRows");
+      if (!db || !currentUserId) { if(count)count.textContent="Admin Login လိုအပ်သည်"; return; }
+      if(count)count.textContent="မှတ်တမ်းဖတ်နေသည်...";
+      const {data,error}=await db.from("repair_vouchers").select("*").order("created_at",{ascending:false}).limit(1000);
+      if(error){if(count)count.textContent="History ဖတ်မရပါ: "+error.message;if(body){body.replaceChildren();const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=7;td.textContent="Supabase repair_vouchers Table/RLS ကို စစ်ပါ။ "+error.message;tr.appendChild(td);body.appendChild(tr);}return;}
+      voucherHistoryCache=data||[];renderVoucherHistory(voucherHistoryCache);
+    }
+    function openSavedVoucher(v) {
+      document.getElementById("voucherNumber").value=v.voucher_no||"";
+      document.getElementById("voucherDate").value=v.voucher_date||"";
+      document.getElementById("voucherCustomer").value=v.customer_name||"";
+      document.getElementById("voucherJobNo").value=v.repair_job_no==null?"":String(v.repair_job_no);
+      document.getElementById("voucherTracking").value=v.tracking_code||"";
+      document.getElementById("voucherPhone").textContent=v.customer_phone||"—";
+      document.getElementById("voucherAddress").textContent=v.customer_address||"—";
+      document.getElementById("voucherDevice").textContent=v.device||"—";
+      document.getElementById("voucherProblem").textContent=v.problem||"—";
+      const body=document.getElementById("voucherItems");body.replaceChildren();voucherRowCount=0;
+      for(const item of (Array.isArray(v.items)?v.items:[])){addVoucherItem();const tr=body.lastElementChild;tr.querySelector('input[aria-label^="Item"]').value=item.item||"";tr.querySelector(".vqty").value=Number(item.qty||0);tr.querySelector(".vprice").value=Number(item.unit_price||0);}
+      if(!body.children.length)addVoucherItem();
+      calculateVoucher();showDashboardView("voucher");showMessage("ဘောင်ချာ "+(v.voucher_no||"")+" ကို History မှ ပြန်ဖွင့်ထားသည်။ Print Voucher နှိပ်ပြီး ပြန်ထုတ်နိုင်ပါသည်။");
+    }
+    document.getElementById("refreshVoucherHistory")?.addEventListener("click",loadVoucherHistory);
+    document.getElementById("voucherHistorySearch")?.addEventListener("input",()=>renderVoucherHistory(voucherHistoryCache));
     document.getElementById("addVoucherRow")?.addEventListener("click", addVoucherItem);
     document.getElementById("printVoucher")?.addEventListener("click", () => {
       initVoucher();
@@ -615,7 +708,8 @@ tbody tr:hover{background:#f4f7ff}
       inventory: ["inventoryModule"],
       reports: ["reportsModule"],
       finance: ["financeModule"],
-      voucher: ["voucherModule"]
+      voucher: ["voucherModule"],
+      voucherHistory: ["voucherHistoryModule"]
     };
     function showDashboardView(viewName) {
       const targets = dashboardViews[viewName] || dashboardViews.overview;
@@ -628,7 +722,8 @@ tbody tr:hover{background:#f4f7ff}
         document.getElementById("inventoryModule"),
         document.getElementById("reportsModule"),
         document.getElementById("financeModule"),
-        document.getElementById("voucherModule")
+        document.getElementById("voucherModule"),
+        document.getElementById("voucherHistoryModule")
       ].filter(Boolean);
       sections.forEach(section => section.classList.toggle("dashboard-view-hidden", !targets.includes(section.id)));
       workspaceNav?.querySelectorAll("[data-view]").forEach(link => {
@@ -638,7 +733,7 @@ tbody tr:hover{background:#f4f7ff}
         else link.removeAttribute("aria-current");
       });
       const eyebrow = document.querySelector("#dashboard>.card:first-child .view-eyebrow");
-      const labels = {overview:"OVERVIEW",jobs:"REPAIR JOBS",history:"STATUS HISTORY",jobForm:"NEW / EDIT JOB",customers:"CUSTOMERS",inventory:"INVENTORY",reports:"REPORTS & ANALYTICS",finance:"PAYMENTS & EXPENSES",voucher:"NEW VOUCHER"};
+      const labels = {overview:"OVERVIEW",jobs:"REPAIR JOBS",history:"STATUS HISTORY",jobForm:"NEW / EDIT JOB",customers:"CUSTOMERS",inventory:"INVENTORY",reports:"REPORTS & ANALYTICS",finance:"PAYMENTS & EXPENSES",voucher:"NEW VOUCHER",voucherHistory:"VOUCHER HISTORY"};
       if (eyebrow) eyebrow.textContent = labels[viewName] || labels.overview;
       if (viewName !== "overview") {
         const target = targets.length ? document.getElementById(targets[0]) : null;
@@ -655,6 +750,7 @@ tbody tr:hover{background:#f4f7ff}
         if (link.dataset.view === "inventory") loadInventory();
         if (link.dataset.view === "finance") loadFinance();
         if (link.dataset.view === "voucher") initVoucher();
+        if (link.dataset.view === "voucherHistory") loadVoucherHistory();
         setMenuOpen(false);
       });
     });
