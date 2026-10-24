@@ -422,11 +422,13 @@ tbody tr:hover{background:#f4f7ff}
         <input id="jobSearch" type="search" placeholder="Job No, Tracking Code, Customer, Phone, Device..." autocomplete="off">
 
         <div class="table-wrap">
-          <table>
+          <table style="min-width:1180px">
             <thead>
               <tr>
                 <th>Job No.</th>
                 <th>Customer</th>
+                <th>ဖုန်း</th>
+                <th>လိပ်စာ</th>
                 <th>စက်အမျိုးအစား</th>
                 <th>Status</th>
                 <th>ခန့်မှန်းကုန်ကျစရိတ်</th>
@@ -1080,6 +1082,8 @@ tbody tr:hover{background:#f4f7ff}
         for (const value of [
           job.job_no,
           job.customer_name,
+          job.customer_phone,
+          job.customer_address || "—",
           job.device_type,
           job.status,
           formatMMK(job.estimated_cost),
