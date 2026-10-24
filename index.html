@@ -235,7 +235,7 @@ tbody tr:hover{background:#f4f7ff}
         <p id="inventoryMessage" class="muted" aria-live="polite">ပစ္စည်းစာရင်းကို Supabase မှ ဖတ်ရှုမည်။</p>
         <h3 style="margin-top:24px">Stock အဝင် / အထွက် မှတ်တမ်း</h3>
         <form id="stockMovementForm"><div class="grid"><div><label for="movementItem">ပစ္စည်းရွေးရန် *</label><select id="movementItem" required><option value="">ပစ္စည်းစာရင်းဖတ်ရန်</option></select></div><div><label for="movementType">လုပ်ဆောင်ချက် *</label><select id="movementType" required><option value="in">Stock အဝင် (+)</option><option value="out">Stock အထွက် (-)</option></select></div><div><label for="movementQty">အရေအတွက် *</label><input id="movementQty" type="number" min="1" step="1" required></div><div><label for="movementNotes">မှတ်ချက်</label><input id="movementNotes" placeholder="Repair job အတွက် အသုံးပြု"></div></div><button type="submit" id="movementSubmit">Stock Movement သိမ်းမည်</button></form>
-        <label for="inventorySearch">ပစ္စည်းရှာရန်</label><input id="inventorySearch" type="search" placeholder="ပစ္စည်းအမည် / Part No..." autocomplete="off">
+        <h3 style="margin-top:24px">Stock Movement History · အဝင်/အထွက် မှတ်တမ်း</h3><div class="table-wrap"><table style="min-width:760px"><thead><tr><th>အချိန်</th><th>ပစ္စည်း</th><th>အမျိုးအစား</th><th>အရေအတွက်</th><th>မှတ်ချက်</th><th>Admin ID</th></tr></thead><tbody id="stockMovementRows"><tr><td colspan="6">မှတ်တမ်းဖတ်ရန် အသင့်</td></tr></tbody></table></div><label for="inventorySearch">ပစ္စည်းရှာရန်</label><input id="inventorySearch" type="search" placeholder="ပစ္စည်းအမည် / Part No..." autocomplete="off">
         <div class="table-wrap"><table style="min-width:900px"><thead><tr><th>ပစ္စည်းအမည်</th><th>Part No. / SKU</th><th>လက်ကျန်</th><th>အနည်းဆုံးလက်ကျန်</th><th>တစ်ခုချင်းဝယ်ဈေး</th><th>သိုလှောင်နေရာ</th><th>အခြေအနေ</th></tr></thead><tbody id="inventoryRows"><tr><td colspan="7">Supabase Inventory tables တည်ဆောက်ရန် လိုအပ်သည်။</td></tr></tbody></table></div>
       </div>
       <div class="card" id="reportsModule">
@@ -696,6 +696,17 @@ tbody tr:hover{background:#f4f7ff}
       if(!list.length){const row=document.createElement("tr"),cell=document.createElement("td");cell.colSpan=7;cell.textContent="ပစ္စည်းစာရင်းမရှိပါ။";row.appendChild(cell);body.appendChild(row);}
       for(const x of list){const row=document.createElement("tr"),low=Number(x.quantity)<=Number(x.min_quantity);for(const v of [x.name,x.sku||"—",x.quantity,x.min_quantity,formatMMK(x.unit_cost),x.location||"—",low?"⚠ လက်ကျန်နည်း":"ပုံမှန်"]){const cell=document.createElement("td");cell.textContent=String(v??"—");row.appendChild(cell);}body.appendChild(row);}
       msg.textContent="ပစ္စည်း "+items.length+" မျိုး ဖတ်ပြီးပါပြီ။";
+      await loadStockMovements();
+    }
+    async function loadStockMovements(){
+      const body=document.getElementById("stockMovementRows");
+      if(!body||!db||!currentUserId)return;
+      const {data,error}=await db.from("stock_movements").select("movement_type,quantity,notes,created_at,changed_by,inventory_items(name,sku)").order("created_at",{ascending:false}).limit(100);
+      body.replaceChildren();
+      if(error){const row=document.createElement("tr"),cell=document.createElement("td");cell.colSpan=6;cell.textContent="Stock history ဖတ်မရပါ: "+error.message;row.appendChild(cell);body.appendChild(row);return;}
+      if(!(data||[]).length){const row=document.createElement("tr"),cell=document.createElement("td");cell.colSpan=6;cell.textContent="Stock Movement မှတ်တမ်းမရှိသေးပါ။";row.appendChild(cell);body.appendChild(row);return;}
+      const labels={in:"Stock အဝင် (+)",out:"Stock အထွက် (-)",adjustment:"Adjustment"};
+      for(const item of data){const row=document.createElement("tr");const values=[item.created_at?formatDate(item.created_at):"—",item.inventory_items?.name||"—",labels[item.movement_type]||item.movement_type,item.quantity,item.notes||"—",item.changed_by||"—"];for(const value of values){const cell=document.createElement("td");cell.textContent=String(value??"—");row.appendChild(cell);}body.appendChild(row);}
     }
     document.getElementById("stockMovementForm")?.addEventListener("submit",async event=>{event.preventDefault();const msg=document.getElementById("inventoryMessage");if(!db||!currentUserId){msg.textContent="Admin Login ပြန်ဝင်ပါ။";return;}const itemId=document.getElementById("movementItem").value;const type=document.getElementById("movementType").value;const quantity=Number(document.getElementById("movementQty").value);const notes=document.getElementById("movementNotes").value.trim()||null;if(!itemId||!Number.isInteger(quantity)||quantity<1){msg.textContent="ပစ္စည်းနှင့် အရေအတွက်ကို မှန်ကန်စွာ ရွေးပါ။";return;}const btn=document.getElementById("movementSubmit");btn.disabled=true;try{const {error}=await db.from("stock_movements").insert({inventory_item_id:itemId,movement_type:type,quantity,notes,changed_by:currentUserId});if(error)throw error;document.getElementById("stockMovementForm").reset();msg.textContent="Stock Movement သိမ်းပြီးပါပြီ။";await loadInventory();}catch(error){msg.textContent="Stock မှတ်တမ်းသိမ်းမရပါ: "+error.message;}finally{btn.disabled=false;}});
     document.getElementById("refreshInventory")?.addEventListener("click",loadInventory);
