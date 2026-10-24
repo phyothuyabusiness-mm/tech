@@ -491,7 +491,15 @@ tbody tr:hover{background:#f4f7ff}
     function openJobsForStatus(status) {
       showDashboardView("jobs");
       const search = document.getElementById("jobSearch");
-      if (search) { search.value = statusFilterLabels[status] || ""; search.dispatchEvent(new Event("input", {bubbles:true})); }
+      if (search) search.value = "";
+      for (const row of jobsBody.querySelectorAll("tr")) {
+        row.hidden = row.dataset.status !== status;
+      }
+      const count = document.getElementById("jobCount");
+      const shown = [...jobsBody.querySelectorAll("tr")].filter(row => !row.hidden).length;
+      if (count) count.textContent = statusFilterLabels[status] + " — " + shown + " ခု ပြသနေသည်";
+      const heading = document.querySelector("#jobList h3");
+      if (heading) heading.textContent = statusFilterLabels[status] + " · သက်ဆိုင်ရာ Repair Jobs";
     }
     document.querySelectorAll("[data-status-filter]").forEach(tile => {
       tile.addEventListener("click", () => openJobsForStatus(tile.dataset.statusFilter));
@@ -676,6 +684,7 @@ tbody tr:hover{background:#f4f7ff}
       metric("reportCustomers", uniqueCustomers);
       for (const job of rows) {
         const tr = document.createElement("tr");
+        tr.dataset.status = job.status || "";
 
         for (const value of [
           job.job_no,
