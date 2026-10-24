@@ -325,6 +325,7 @@ tbody tr:hover{background:#f4f7ff}
 
         <form id="jobForm">
           <input id="edit_job_no" type="hidden" value="">
+          <input id="edit_job_id" type="hidden" value="">
           <p id="editNotice" class="muted hidden">Repair Job ကို ပြင်ဆင်နေသည်။</p>
           <div class="grid">
             <div>
@@ -1233,6 +1234,7 @@ tbody tr:hover{background:#f4f7ff}
         editButton.addEventListener("click", () => {
           const form = document.getElementById("jobForm");
           document.getElementById("edit_job_no").value = String(job.job_no);
+          document.getElementById("edit_job_id").value = String(job.id || "");
           document.getElementById("customer_name").value = job.customer_name || "";
           document.getElementById("customer_phone").value = job.customer_phone || "";
           document.getElementById("customer_address").value = job.customer_address || "";
@@ -1362,6 +1364,7 @@ tbody tr:hover{background:#f4f7ff}
       const form = document.getElementById("jobForm");
       form.reset();
       document.getElementById("edit_job_no").value = "";
+      document.getElementById("edit_job_id").value = "";
       document.getElementById("jobSubmit").textContent = "Repair Job သိမ်းမည်";
       document.getElementById("cancelEdit").classList.add("hidden");
       document.getElementById("editNotice").classList.add("hidden");
@@ -1402,6 +1405,7 @@ tbody tr:hover{background:#f4f7ff}
           }
 
           const editJobNo = document.getElementById("edit_job_no").value;
+          const editJobId = document.getElementById("edit_job_id").value;
           const jobValues = {
             customer_name: values.customer_name.trim(),
             customer_phone: values.customer_phone.trim(),
@@ -1413,16 +1417,16 @@ tbody tr:hover{background:#f4f7ff}
             estimated_completion_date: values.estimated_completion_date || null
           };
 
-          if (editJobNo) {
+          if (editJobId) {
             const { data, error } = await db
               .from("repair_jobs")
               .update(jobValues)
-              .eq("job_no", Number(editJobNo))
-              .select("job_no, tracking_code")
-              .single();
+              .eq("id", editJobId)
+              .select("id, job_no, tracking_code")
+              .maybeSingle();
 
             if (error) throw error;
-            if (!data) throw new Error("ပြင်ဆင်ထားသော Job ကို Database မှ ပြန်မရပါ။ UPDATE Policy ကို စစ်ပါ။");
+            if (!data) throw new Error("ပြင်ဆင်မှု မသိမ်းနိုင်ပါ။ Admin UPDATE Policy နှင့် Login အခြေအနေကို စစ်ပါ။");
 
             resetJobForm();
             showMessage("Job No. " + data.job_no + " ကို ပြင်ဆင်သိမ်းဆည်းပြီးပါပြီ။ Tracking Code မပြောင်းလဲပါ။");
