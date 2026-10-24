@@ -114,6 +114,10 @@ tbody tr:hover{background:#f4f7ff}
 .status-select{background:#f8faff;border-color:#dce3ef;color:#172033}
 .workspace-nav{position:fixed;z-index:60;top:0;left:0;bottom:0;width:min(310px,86vw);margin:0;padding:26px 18px 24px;display:flex;flex-direction:column;flex-wrap:nowrap;gap:8px;overflow-y:auto;background:#fffffff2;border-right:1px solid #dfe5f0;box-shadow:20px 0 60px #14213d20;backdrop-filter:blur(24px);transform:translateX(-110%);transition:transform .28s cubic-bezier(.2,.8,.2,1);border-radius:0 24px 24px 0}
 .workspace-nav.is-open{transform:translateX(0)}
+.dashboard-view-hidden{display:none!important}
+.workspace-nav a.is-active{background:#edf1ff;border-color:#dbe2ff;color:#344ed0;font-weight:800}
+#dashboard>.card:first-child .view-eyebrow{display:inline-flex;margin-bottom:9px;padding:6px 10px;border-radius:999px;background:#edf1ff;color:#5268e8;font-size:10px;font-weight:800;letter-spacing:1.3px}
+
 .workspace-nav a{display:flex;align-items:center;gap:12px;color:#52617a;border:1px solid transparent;background:transparent;border-radius:13px;padding:13px 14px;font-size:13px;text-align:left}
 .workspace-nav a:hover,.workspace-nav a:focus{border-color:#e1e7ff;color:#304bd3;background:#f0f3ff}
 .sidebar-heading{display:flex;flex-direction:column;gap:5px;padding:10px 12px 22px;margin-bottom:8px;border-bottom:1px solid #e8edf5}
@@ -172,7 +176,7 @@ tbody tr:hover{background:#f4f7ff}
 
     <section id="dashboard" class="hidden">
       <div class="card">
-        <h3>Admin Dashboard</h3>
+        <span class="view-eyebrow">OVERVIEW</span><h3>Admin Dashboard</h3>
         <p>PTY-TECH Repair Job Management</p>
         <button id="logout" class="secondary" type="button">
           Logout
@@ -189,13 +193,13 @@ tbody tr:hover{background:#f4f7ff}
       <nav class="workspace-nav" id="workspaceNav" aria-label="Workspace sections">
         <div class="sidebar-heading"><span class="sidebar-kicker">WORKSPACE</span><strong>PTY-TECH</strong><span>Repair Management</span></div>
         <button type="button" id="menuClose" class="menu-close" aria-label="Close navigation">×</button>
-        <a href="#dashboard">◈ Overview · ပင်မ</a>
-        <a href="#jobList">▦ Repair Jobs · အလုပ်စာရင်း</a>
-        <a href="#historyModule">↻ Status History · မှတ်တမ်း</a>
-        <a href="#jobForm">＋ New / Edit Job · အလုပ်ထည့်ရန်</a>
-        <a href="#customersModule">♙ Customers · ဖောက်သည်များ</a>
-        <a href="#inventoryModule">▣ Inventory · ပစ္စည်းစာရင်း</a>
-        <a href="#reportsModule">▥ Reports · အစီရင်ခံစာ</a>
+        <a href="#dashboard" data-view="overview">◈ Overview · ပင်မ</a>
+        <a href="#jobList" data-view="jobs">▦ Repair Jobs · အလုပ်စာရင်း</a>
+        <a href="#historyModule" data-view="history">↻ Status History · မှတ်တမ်း</a>
+        <a href="#jobForm" data-view="jobForm">＋ New / Edit Job · အလုပ်ထည့်ရန်</a>
+        <a href="#customersModule" data-view="customers">♙ Customers · ဖောက်သည်များ</a>
+        <a href="#inventoryModule" data-view="inventory">▣ Inventory · ပစ္စည်းစာရင်း</a>
+        <a href="#reportsModule" data-view="reports">▥ Reports · အစီရင်ခံစာ</a>
       </nav>
       <div class="card" id="customersModule">
         <h3>♙ Customers · ဖောက်သည်များ</h3>
@@ -232,7 +236,7 @@ tbody tr:hover{background:#f4f7ff}
         </div>
         <p class="muted">မှတ်ချက်: Estimated Cost သည် အမှန်တကယ်ရရှိငွေ (Revenue) သို့မဟုတ် အမြတ်မဟုတ်ပါ။</p>
       </div>
-      <div class="card">
+      <div class="card" id="jobFormModule">
         <h3>Repair Job အသစ်ထည့်ရန်</h3>
 
         <form id="jobForm">
@@ -429,6 +433,53 @@ tbody tr:hover{background:#f4f7ff}
     menuBackdrop?.addEventListener("click", () => setMenuOpen(false));
     workspaceNav?.querySelectorAll("a").forEach(link => link.addEventListener("click", () => setMenuOpen(false)));
     document.addEventListener("keydown", event => { if (event.key === "Escape") setMenuOpen(false); });
+
+
+    // Show only the section selected from the slide menu.
+    const dashboardViews = {
+      overview: [],
+      jobs: ["jobList"],
+      history: ["historyModule"],
+      jobForm: ["jobFormModule"],
+      customers: ["customersModule"],
+      inventory: ["inventoryModule"],
+      reports: ["reportsModule"]
+    };
+    function showDashboardView(viewName) {
+      const targets = dashboardViews[viewName] || dashboardViews.overview;
+      const sections = [
+        document.getElementById("jobList"),
+        document.getElementById("historyModule"),
+        document.getElementById("jobFormModule"),
+        document.getElementById("customersModule"),
+        document.getElementById("inventoryModule"),
+        document.getElementById("reportsModule")
+      ].filter(Boolean);
+      sections.forEach(section => section.classList.toggle("dashboard-view-hidden", !targets.includes(section.id)));
+      workspaceNav?.querySelectorAll("[data-view]").forEach(link => {
+        const active = link.dataset.view === viewName;
+        link.classList.toggle("is-active", active);
+        if (active) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      });
+      const eyebrow = document.querySelector("#dashboard>.card:first-child .view-eyebrow");
+      const labels = {overview:"OVERVIEW",jobs:"REPAIR JOBS",history:"STATUS HISTORY",jobForm:"NEW / EDIT JOB",customers:"CUSTOMERS",inventory:"INVENTORY",reports:"REPORTS & ANALYTICS"};
+      if (eyebrow) eyebrow.textContent = labels[viewName] || labels.overview;
+      if (viewName !== "overview") {
+        const target = targets.length ? document.getElementById(targets[0]) : null;
+        target?.scrollIntoView({behavior:"smooth",block:"start"});
+      } else {
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
+    }
+    workspaceNav?.querySelectorAll("a[data-view]").forEach(link => {
+      link.addEventListener("click", event => {
+        event.preventDefault();
+        showDashboardView(link.dataset.view);
+        setMenuOpen(false);
+      });
+    });
+    showDashboardView("overview");
 
     async function checkAdmin() {
       const {
