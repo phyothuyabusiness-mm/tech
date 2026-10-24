@@ -239,15 +239,24 @@ tbody tr:hover{background:#f4f7ff}
         <div class="table-wrap"><table style="min-width:900px"><thead><tr><th>ပစ္စည်းအမည်</th><th>Part No. / SKU</th><th>လက်ကျန်</th><th>အနည်းဆုံးလက်ကျန်</th><th>တစ်ခုချင်းဝယ်ဈေး</th><th>သိုလှောင်နေရာ</th><th>အခြေအနေ</th></tr></thead><tbody id="inventoryRows"><tr><td colspan="7">Supabase Inventory tables တည်ဆောက်ရန် လိုအပ်သည်။</td></tr></tbody></table></div>
       </div>
       <div class="card" id="reportsModule">
-        <h3>▥ Reports & Analytics · အစီရင်ခံစာ</h3>
-        <p class="muted">အောက်ပါ Summary များကို လက်ရှိ Repair Job စာရင်းမှ အလိုအလျောက်တွက်ချက်မည်။</p>
+        <h3>▥ Reports & Profit · အစီရင်ခံစာ</h3>
+        <p class="muted">Repair Job စာရင်းမှ အလိုအလျောက်တွက်ချက်ထားသော အစီရင်ခံစာ။ အချိန်ကာလရွေးပြီး CSV အဖြစ် ဒေါင်းလုဒ်လုပ်နိုင်သည်။</p>
+        <div class="grid" style="align-items:end;margin-bottom:16px">
+          <div><label for="reportPeriod">အစီရင်ခံစာကာလ</label><select id="reportPeriod"><option value="month">ယခုလ</option><option value="all">စာရင်းအားလုံး (နောက်ဆုံး Job 1,000 အထိ)</option></select></div>
+          <div><button type="button" id="exportReport">⬇ CSV Report ဒေါင်းလုဒ်</button></div>
+          <div><button type="button" id="refreshReport" class="secondary">↻ Report ပြန်ဖတ်ရန်</button></div>
+        </div>
         <div class="module-strip">
-          <div class="module-tile"><div class="tile-icon">₭</div><strong id="reportEstimated">—</strong><span>Estimated Cost · ခန့်မှန်းစရိတ်</span></div>
+          <div class="module-tile"><div class="tile-icon">₭</div><strong id="reportEstimated">—</strong><span>Estimated Cost · ခန့်မှန်းပြုပြင်ခ</span></div>
+          <div class="module-tile"><div class="tile-icon">₭</div><strong id="reportRecordedCost">—</strong><span>Recorded Repair Cost · မှတ်တမ်းတင်ပြုပြင်စရိတ်</span></div>
           <div class="module-tile"><div class="tile-icon">✓</div><strong id="reportDelivered">—</strong><span>Delivered · အပ်နှံပြီး</span></div>
           <div class="module-tile"><div class="tile-icon">◷</div><strong id="reportPending">—</strong><span>Pending · ဆောင်ရွက်ဆဲ</span></div>
           <div class="module-tile"><div class="tile-icon">♙</div><strong id="reportCustomers">—</strong><span>Unique Customers · ဖောက်သည်</span></div>
         </div>
-        <p class="muted">မှတ်ချက်: Estimated Cost သည် အမှန်တကယ်ရရှိငွေ (Revenue) သို့မဟုတ် အမြတ်မဟုတ်ပါ။</p>
+        <p id="reportInfo" class="muted">Report အချက်အလက်များ ဖတ်ရန် အသင့်။</p>
+        <h3 style="margin-top:24px">Status အလိုက် စာရင်းချုပ်</h3>
+        <div class="table-wrap"><table style="min-width:520px"><thead><tr><th>Repair Status</th><th>Job အရေအတွက်</th><th>ခန့်မှန်းပြုပြင်ခ စုစုပေါင်း</th></tr></thead><tbody id="reportStatusRows"><tr><td colspan="3">Report ဖတ်ရန် အသင့်</td></tr></tbody></table></div>
+        <p class="muted">အရေးကြီး: Estimated Cost နှင့် Repair Cost ကို အလိုအလျောက် Revenue/Profit ဟု မယူဆထားပါ။ အမှန်တကယ်ငွေလက်ခံမှု၊ ပေးချေရန်ကျန်ငွေ၊ အပိုပစ္စည်းအသုံးစရိတ်တို့ကို သီးခြားစာရင်းမသွင်းရသေးသဖြင့် Net Profit ကို မဖော်ပြပါ။</p>
       </div>
       <div class="card" id="jobFormModule">
         <h3>Repair Job အသစ်ထည့်ရန်</h3>
@@ -577,7 +586,7 @@ tbody tr:hover{background:#f4f7ff}
         .from("repair_status_history")
         .select("repair_job_id, old_status, new_status, changed_at, changed_by")
         .order("changed_at", { ascending: false })
-        .limit(100);
+        .limit(1000);
 
       if (error) {
         count.textContent = "မှတ်တမ်းဖတ်မရပါ";
@@ -721,6 +730,79 @@ tbody tr:hover{background:#f4f7ff}
       finally{btn.disabled=false;}
     });
 
+    let reportJobRows = [];
+    const reportStatusLabels = {
+      received: "လက်ခံရရှိ",
+      diagnosing: "စစ်ဆေးနေဆဲ",
+      repairing: "ပြုပြင်နေဆဲ",
+      waiting_parts: "ပစ္စည်းစောင့်ဆိုင်းနေ",
+      completed: "ပြုပြင်ပြီး",
+      delivered: "ပစ္စည်းပြန်လည်ပေးအပ်ပြီး",
+      cancelled: "ပယ်ဖျက်ထား"
+    };
+    function getReportRows() {
+      const period = document.getElementById("reportPeriod")?.value || "month";
+      if (period === "all") return reportJobRows;
+      const now = new Date();
+      const year = now.getFullYear(), month = now.getMonth();
+      return reportJobRows.filter(job => {
+        if (!job.received_at) return false;
+        const date = new Date(job.received_at);
+        return !Number.isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() === month;
+      });
+    }
+    function updateReports(rows) {
+      reportJobRows = rows || [];
+      const list = getReportRows();
+      const metric = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+      const activeStatuses = ["received","diagnosing","repairing","waiting_parts"];
+      const totalEstimate = list.reduce((sum, job) => sum + (Number(job.estimated_cost) || 0), 0);
+      const recordedCost = list.reduce((sum, job) => sum + (Number(job.repair_cost) || 0), 0);
+      const customers = new Set(list.map(job => String(job.customer_phone || job.customer_name || "").trim().toLowerCase()).filter(Boolean)).size;
+      metric("reportEstimated", formatMMK(totalEstimate));
+      metric("reportRecordedCost", formatMMK(recordedCost));
+      metric("reportDelivered", list.filter(job => job.status === "delivered").length);
+      metric("reportPending", list.filter(job => activeStatuses.includes(job.status)).length);
+      metric("reportCustomers", customers);
+      const info = document.getElementById("reportInfo");
+      if (info) info.textContent = "ပြသထားသော Job " + list.length + " ခု · ကာလ: " + (document.getElementById("reportPeriod")?.value === "all" ? "စာရင်းအားလုံး (နောက်ဆုံး 1,000 ခုအထိ)" : "ယခုလ");
+      const body = document.getElementById("reportStatusRows");
+      if (body) {
+        body.replaceChildren();
+        const statuses = Object.keys(reportStatusLabels);
+        for (const status of statuses) {
+          const group = list.filter(job => job.status === status);
+          const estimate = group.reduce((sum, job) => sum + (Number(job.estimated_cost) || 0), 0);
+          const row = document.createElement("tr");
+          for (const value of [reportStatusLabels[status], group.length, formatMMK(estimate)]) {
+            const cell = document.createElement("td"); cell.textContent = String(value); row.appendChild(cell);
+          }
+          body.appendChild(row);
+        }
+      }
+    }
+    function exportReportCSV() {
+      const rows = getReportRows();
+      const columns = [
+        ["Job No", "job_no"], ["Customer Name", "customer_name"], ["Phone", "customer_phone"],
+        ["Device", "device_type"], ["Brand / Model", "brand_model"], ["Status", "status"],
+        ["Tracking Code", "tracking_code"], ["Estimated Cost MMK", "estimated_cost"],
+        ["Recorded Repair Cost MMK", "repair_cost"], ["Received At", "received_at"],
+        ["Estimated Completion Date", "estimated_completion_date"]
+      ];
+      const quote = value => '"' + String(value ?? "").replace(/"/g, '""') + '"';
+      const csv = "\uFEFF" + [columns.map(col => quote(col[0])).join(","), ...rows.map(job => columns.map(col => quote(col[1] === "status" ? (reportStatusLabels[job[col[1]]] || job[col[1]]) : job[col[1]] )).join(","))].join("\r\n");
+      const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "PTY-TECH-Repair-Report-" + (document.getElementById("reportPeriod")?.value === "all" ? "all" : new Date().toISOString().slice(0,7)) + ".csv";
+      document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+    }
+    document.getElementById("reportPeriod")?.addEventListener("change", () => updateReports(reportJobRows));
+    document.getElementById("exportReport")?.addEventListener("click", exportReportCSV);
+    document.getElementById("refreshReport")?.addEventListener("click", loadJobs);
+
     async function loadJobs() {
       if (!db || !currentUserId) return;
 
@@ -730,7 +812,7 @@ tbody tr:hover{background:#f4f7ff}
       const { data, error } = await db
         .from("repair_jobs")
         .select(
-          "job_no, customer_name, customer_phone, device_type, brand_model, problem_description, status, tracking_code, estimated_cost, received_at, estimated_completion_date"
+          "job_no, customer_name, customer_phone, device_type, brand_model, problem_description, status, tracking_code, estimated_cost, repair_cost, received_at, estimated_completion_date"
         )
         .order("received_at", { ascending: false })
         .limit(100);
@@ -762,10 +844,7 @@ tbody tr:hover{background:#f4f7ff}
       metric("metricActive", activeCount);
       metric("metricCompleted", completedCount);
       metric("metricValue", formatMMK(totalEstimate));
-      metric("reportEstimated", formatMMK(totalEstimate));
-      metric("reportDelivered", rows.filter(job => job.status === "delivered").length);
-      metric("reportPending", activeCount);
-      metric("reportCustomers", uniqueCustomers);
+      updateReports(rows);
       for (const job of rows) {
         const tr = document.createElement("tr");
         tr.dataset.status = job.status || "";
