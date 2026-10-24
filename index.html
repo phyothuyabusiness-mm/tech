@@ -104,6 +104,8 @@ button.danger{background:#fff0f2;border-color:#f0c8cf;color:#b92d47;box-shadow:n
 #dashboard>.card:first-child p{color:#71809a}
 #jobCount{color:#53627b;background:#f7f9fd;border-color:#e1e6f0}
 .module-tile{border-color:#e3e8f2;background:linear-gradient(145deg,#fff,#f8faff)}
+.status-overview-tile{cursor:pointer;transition:transform .16s,border-color .16s,box-shadow .16s}
+.status-overview-tile:hover,.status-overview-tile:focus{transform:translateY(-2px);border-color:#8b9bff;box-shadow:0 8px 24px #536dfe18;outline:none}
 .module-tile .tile-icon{background:#edf0ff;color:#536dfe}
 .module-tile span{color:#77849a}
 .table-wrap{border-color:#e0e6f0}
@@ -183,11 +185,15 @@ tbody tr:hover{background:#f4f7ff}
         </button>
       </div>
 
-      <div class="module-strip dashboard-view-hidden" id="overviewMetrics" aria-label="Workspace overview">
-        <div class="module-tile"><div class="tile-icon">▦</div><strong id="metricTotal">—</strong><span>Total Repair Jobs · စုစုပေါင်း</span></div>
-        <div class="module-tile"><div class="tile-icon">◷</div><strong id="metricActive">—</strong><span>In Progress · လုပ်ဆောင်ဆဲ</span></div>
-        <div class="module-tile"><div class="tile-icon">✓</div><strong id="metricCompleted">—</strong><span>Completed · ပြုပြင်ပြီး</span></div>
-        <div class="module-tile"><div class="tile-icon">▤</div><strong id="metricValue">—</strong><span>Estimated Value · ခန့်မှန်းတန်ဖိုး</span></div>
+      <div class="module-strip" id="overviewMetrics" aria-label="Repair status overview">
+        <div class="module-tile status-overview-tile" role="button" tabindex="0" data-status-filter="received"><div class="tile-icon">↓</div><strong id="statusCountReceived">—</strong><span>လက်ခံရရှိ · Received</span></div>
+        <div class="module-tile status-overview-tile" role="button" tabindex="0" data-status-filter="diagnosing"><div class="tile-icon">⌕</div><strong id="statusCountDiagnosing">—</strong><span>စစ်ဆေးနေဆဲ · Diagnosing</span></div>
+        <div class="module-tile status-overview-tile" role="button" tabindex="0" data-status-filter="repairing"><div class="tile-icon">⚙</div><strong id="statusCountRepairing">—</strong><span>ပြုပြင်နေဆဲ · Repairing</span></div>
+        <div class="module-tile status-overview-tile" role="button" tabindex="0" data-status-filter="waiting_parts"><div class="tile-icon">▣</div><strong id="statusCountWaiting">—</strong><span>ပစ္စည်းစောင့်ဆိုင်းနေ · Waiting Parts</span></div>
+        <div class="module-tile status-overview-tile" role="button" tabindex="0" data-status-filter="completed"><div class="tile-icon">✓</div><strong id="statusCountCompleted">—</strong><span>ပြုပြင်ပြီး · Completed</span></div>
+        <div class="module-tile status-overview-tile" role="button" tabindex="0" data-status-filter="delivered"><div class="tile-icon">↗</div><strong id="statusCountDelivered">—</strong><span>ပစ္စည်းပြန်လည်ပေးအပ်ပြီး · Delivered</span></div>
+        <div class="module-tile status-overview-tile" role="button" tabindex="0" data-status-filter="cancelled"><div class="tile-icon">×</div><strong id="statusCountCancelled">—</strong><span>ပယ်ဖျက်ထား · Cancelled</span></div>
+        <div class="module-tile"><div class="tile-icon">▦</div><strong id="metricTotal">—</strong><span>Repair Jobs စုစုပေါင်း</span></div>
       </div>
       <div id="menuBackdrop" class="menu-backdrop hidden" aria-hidden="true"></div>
       <nav class="workspace-nav" id="workspaceNav" aria-label="Workspace sections">
@@ -437,7 +443,7 @@ tbody tr:hover{background:#f4f7ff}
 
     // Show only the section selected from the slide menu.
     const dashboardViews = {
-      overview: [],
+      overview: ["overviewMetrics"],
       jobs: ["jobList"],
       history: ["historyModule"],
       jobForm: ["jobFormModule"],
@@ -481,6 +487,16 @@ tbody tr:hover{background:#f4f7ff}
       });
     });
     showDashboardView("overview");
+    const statusFilterLabels = {received:"လက်ခံရရှိ",diagnosing:"စစ်ဆေးနေဆဲ",repairing:"ပြုပြင်နေဆဲ",waiting_parts:"ပစ္စည်းစောင့်ဆိုင်းနေ",completed:"ပြုပြင်ပြီး",delivered:"အပ်နှံပြီး",cancelled:"ပယ်ဖျက်ထား"};
+    function openJobsForStatus(status) {
+      showDashboardView("jobs");
+      const search = document.getElementById("jobSearch");
+      if (search) { search.value = statusFilterLabels[status] || ""; search.dispatchEvent(new Event("input", {bubbles:true})); }
+    }
+    document.querySelectorAll("[data-status-filter]").forEach(tile => {
+      tile.addEventListener("click", () => openJobsForStatus(tile.dataset.statusFilter));
+      tile.addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openJobsForStatus(tile.dataset.statusFilter); } });
+    });
 
     async function checkAdmin() {
       const {
@@ -644,6 +660,13 @@ tbody tr:hover{background:#f4f7ff}
       const uniqueCustomers = new Set(rows.map(job => String(job.customer_phone || job.customer_name || "").trim().toLowerCase()).filter(Boolean)).size;
       const metric = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
       metric("metricTotal", rows.length);
+      metric("statusCountReceived", rows.filter(job => job.status === "received").length);
+      metric("statusCountDiagnosing", rows.filter(job => job.status === "diagnosing").length);
+      metric("statusCountRepairing", rows.filter(job => job.status === "repairing").length);
+      metric("statusCountWaiting", rows.filter(job => job.status === "waiting_parts").length);
+      metric("statusCountCompleted", rows.filter(job => job.status === "completed").length);
+      metric("statusCountDelivered", rows.filter(job => job.status === "delivered").length);
+      metric("statusCountCancelled", rows.filter(job => job.status === "cancelled").length);
       metric("metricActive", activeCount);
       metric("metricCompleted", completedCount);
       metric("metricValue", formatMMK(totalEstimate));
