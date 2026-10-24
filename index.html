@@ -263,6 +263,7 @@ input[type=date]{color-scheme:dark}
           <table>
             <thead>
               <tr>
+                <th>Delete</th>
                 <th>Job No.</th>
                 <th>Customer</th>
                 <th>စက်အမျိုးအစား</th>
@@ -274,7 +275,6 @@ input[type=date]{color-scheme:dark}
                 <th>Tracking Code</th>
                 <th>SMS ပို့ရန်</th>
                 <th>Edit</th>
-                <th>Delete</th>
               </tr>
             </thead>
             <tbody id="jobs"></tbody>
@@ -657,7 +657,8 @@ input[type=date]{color-scheme:dark}
           }
         });
         deleteCell.appendChild(deleteButton);
-        tr.appendChild(deleteCell);
+        // Keep Delete visible as the first column instead of far off-screen.
+        tr.insertBefore(deleteCell, tr.firstChild);
 
         jobsBody.appendChild(tr);
       }
