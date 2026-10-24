@@ -695,6 +695,32 @@ tbody tr:hover{background:#f4f7ff}
       if(error){if(count)count.textContent="History ဖတ်မရပါ: "+error.message;if(body){body.replaceChildren();const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=7;td.textContent="Supabase repair_vouchers Table/RLS ကို စစ်ပါ။ "+error.message;tr.appendChild(td);body.appendChild(tr);}return;}
       voucherHistoryCache=data||[];renderVoucherHistory(voucherHistoryCache);
     }
+    let recycleBinCache = [];
+    async function moveToRecycleBin(entityType, recordId, recordData, label) {
+      const {error} = await db.from("recycle_bin").insert({entity_type:entityType,record_id:String(recordId),record_data:recordData,display_label:label||"",deleted_by:currentUserId});
+      if (error) throw new Error("Recycle Bin ထဲ မသိမ်းနိုင်ပါ: " + error.message);
+    }
+    function renderRecycleBin(rows) {
+      const body=document.getElementById("recycleBinRows"),count=document.getElementById("recycleBinCount"); if(!body||!count)return;
+      const q=(document.getElementById("recycleBinSearch")?.value||"").trim().toLowerCase();
+      const filtered=rows.filter(x=>[x.entity_type,x.display_label,x.record_data?.customer_name,x.record_data?.job_no,x.record_data?.voucher_no,x.record_data?.tracking_code].some(v=>String(v??"").toLowerCase().includes(q)));
+      body.replaceChildren();count.textContent="ဖျက်ထားသောမှတ်တမ်း "+filtered.length+" ခု";
+      if(!filtered.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=5;td.textContent="Recycle Bin ထဲမှာ မှတ်တမ်းမရှိသေးပါ။";tr.appendChild(td);body.appendChild(tr);return;}
+      for(const item of filtered){const d=item.record_data||{},tr=document.createElement("tr");
+        const type=document.createElement("td");type.textContent=item.entity_type==="repair_job"?"Repair Job":"Voucher";tr.appendChild(type);
+        const no=document.createElement("td");no.textContent=item.entity_type==="repair_job"?"Job #"+(d.job_no??item.record_id):(d.voucher_no||item.display_label||item.record_id);tr.appendChild(no);
+        const customer=document.createElement("td");customer.textContent=d.customer_name||"—";tr.appendChild(customer);
+        const date=document.createElement("td");date.textContent=formatDate(item.deleted_at);tr.appendChild(date);
+        const actions=document.createElement("td"),restore=document.createElement("button");restore.type="button";restore.className="secondary";restore.textContent="↩ ပြန်ယူရန်";
+        restore.addEventListener("click",async()=>{if(!window.confirm("ဒီမှတ်တမ်းကို Recycle Bin မှ ပြန်ယူမှာ သေချာပါသလား?"))return;setButtonBusy(restore,true,"ပြန်ယူနေသည်...");try{const table=item.entity_type==="repair_job"?"repair_jobs":"repair_vouchers";const payload={...d};delete payload.id;const {error}=await db.from(table).insert(payload);if(error)throw error;const {error:removeError}=await db.from("recycle_bin").delete().eq("id",item.id);if(removeError)throw removeError;showMessage("မှတ်တမ်းကို ပြန်လည်ရယူပြီးပါပြီ။");await loadRecycleBin();if(item.entity_type==="repair_job")await loadJobs();else await loadVoucherHistory();}catch(e){showMessage("ပြန်ယူမရပါ: "+e.message,true);}finally{setButtonBusy(restore,false);}});
+        const permanent=document.createElement("button");permanent.type="button";permanent.className="danger";permanent.style.marginLeft="6px";permanent.textContent="အပြီးဖျက်";
+        permanent.addEventListener("click",async()=>{if(!window.confirm("ဒီ Recycle Bin မှတ်တမ်းကို အပြီးဖျက်မည်။ ပြန်ယူ၍မရတော့ပါ။ ဆက်လုပ်မလား?"))return;setButtonBusy(permanent,true,"ဖျက်နေသည်...");try{const {error}=await db.from("recycle_bin").delete().eq("id",item.id);if(error)throw error;showMessage("Recycle Bin မှ အပြီးဖျက်ပြီးပါပြီ။");await loadRecycleBin();}catch(e){showMessage("အပြီးဖျက်မရပါ: "+e.message,true);}finally{setButtonBusy(permanent,false);}});
+        actions.append(restore,permanent);tr.appendChild(actions);body.appendChild(tr);
+      }
+    }
+    async function loadRecycleBin(){const count=document.getElementById("recycleBinCount");if(!db||!currentUserId){if(count)count.textContent="Admin Login လိုအပ်သည်";return;}if(count)count.textContent="Recycle Bin ဖတ်နေသည်...";const {data,error}=await db.from("recycle_bin").select("*").order("deleted_at",{ascending:false}).limit(1000);if(error){if(count)count.textContent="Recycle Bin ဖတ်မရပါ: "+error.message;return;}recycleBinCache=data||[];renderRecycleBin(recycleBinCache);}
+    document.getElementById("refreshRecycleBin")?.addEventListener("click",loadRecycleBin);
+    document.getElementById("recycleBinSearch")?.addEventListener("input",()=>renderRecycleBin(recycleBinCache));
     function openSavedVoucher(v) {
       document.getElementById("voucherNumber").value=v.voucher_no||"";
       document.getElementById("voucherDate").value=v.voucher_date||"";
