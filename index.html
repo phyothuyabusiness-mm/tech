@@ -81,11 +81,61 @@ input[type=date]{color-scheme:dark}
 @media(max-width:850px){main{padding:18px 14px}.module-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.table-wrap{border-radius:12px}.card{border-radius:18px}}
 @media(max-width:560px){header{padding:12px 14px}.brand-mark{width:38px;height:38px;border-radius:12px}header h2{font-size:15px}.header-pill{font-size:10px;padding:8px}.header-pill .desktop-label{display:none}main{padding:13px 10px}.card{padding:17px;margin-bottom:14px;border-radius:16px}.grid{grid-template-columns:1fr;gap:0}.module-strip{gap:9px}.module-tile{padding:13px;border-radius:13px}.module-tile strong{font-size:18px}.workspace-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-nav a{text-align:center;padding:11px 6px}button{white-space:normal}#jobSubmit{margin-bottom:8px}#dashboard>.card:first-child{padding:22px 18px}#login{margin:4vh auto;padding:23px 18px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
-</style>
+
+/* Apple / iPad premium slide navigation */
+:root{color-scheme:light;--bg:#f4f6fb;--panel:#ffffff;--panel2:#f8faff;--line:#e1e6f0;--text:#172033;--muted:#78849a;--violet:#536dfe;--cyan:#4da9ed;--green:#159b72;--red:#d84b62;--amber:#b9801e}
+body{background:radial-gradient(ellipse at 10% 0%,#cfd9ff66,transparent 35%),radial-gradient(ellipse at 95% 20%,#d9f0ff99,transparent 32%),#f4f6fb;color:var(--text)}
+body:before{opacity:.08;background-image:linear-gradient(#1720330a 1px,transparent 1px),linear-gradient(90deg,#1720330a 1px,transparent 1px)}
+header{background:#ffffffd9;border-bottom:1px solid #dfe5f0;box-shadow:0 4px 24px #1e2a4408}
+.brand-mark{background:linear-gradient(145deg,#182b55,#536dfe);box-shadow:0 8px 24px #536dfe30}
+header h2{color:#15223d}
+header .subbrand{color:#77849b}
+.header-pill{color:#42506a;background:#f5f7fc;border-color:#e1e6f0}
+.card{background:#ffffffed;border-color:#e3e8f2;box-shadow:0 12px 36px #20365b0b}
+#login{background:linear-gradient(145deg,#fff,#f7f9ff);box-shadow:0 28px 90px #20365b17}
+#login:before{color:#536dfe}
+label{color:#43516a}
+input,textarea,select{background:#f8faff;border-color:#dce3ef;color:#172033}
+input::placeholder,textarea::placeholder{color:#9aa5b8}
+button{background:linear-gradient(110deg,#6178ff,#4057d8);box-shadow:0 5px 12px #536dfe20}
+button.secondary{background:#f1f4fa;border-color:#dce3ef;color:#34435e;box-shadow:none}
+button.danger{background:#fff0f2;border-color:#f0c8cf;color:#b92d47;box-shadow:none}
+#dashboard>.card:first-child{background:linear-gradient(115deg,#ffffff,#eef3ff 70%,#e7f7ff);border-color:#dce5f5}
+#dashboard>.card:first-child p{color:#71809a}
+#jobCount{color:#53627b;background:#f7f9fd;border-color:#e1e6f0}
+.module-tile{border-color:#e3e8f2;background:linear-gradient(145deg,#fff,#f8faff)}
+.module-tile .tile-icon{background:#edf0ff;color:#536dfe}
+.module-tile span{color:#77849a}
+.table-wrap{border-color:#e0e6f0}
+th{background:#eef2fa;color:#52617a}
+td{color:#34435d;border-bottom-color:#e9edf5}
+tbody tr,tbody tr:nth-child(even){background:#fff}
+tbody tr:hover{background:#f4f7ff}
+.status-select{background:#f8faff;border-color:#dce3ef;color:#172033}
+.workspace-nav{position:fixed;z-index:60;top:0;left:0;bottom:0;width:min(310px,86vw);margin:0;padding:26px 18px 24px;display:flex;flex-direction:column;flex-wrap:nowrap;gap:8px;overflow-y:auto;background:#fffffff2;border-right:1px solid #dfe5f0;box-shadow:20px 0 60px #14213d20;backdrop-filter:blur(24px);transform:translateX(-110%);transition:transform .28s cubic-bezier(.2,.8,.2,1);border-radius:0 24px 24px 0}
+.workspace-nav.is-open{transform:translateX(0)}
+.workspace-nav a{display:flex;align-items:center;gap:12px;color:#52617a;border:1px solid transparent;background:transparent;border-radius:13px;padding:13px 14px;font-size:13px;text-align:left}
+.workspace-nav a:hover,.workspace-nav a:focus{border-color:#e1e7ff;color:#304bd3;background:#f0f3ff}
+.sidebar-heading{display:flex;flex-direction:column;gap:5px;padding:10px 12px 22px;margin-bottom:8px;border-bottom:1px solid #e8edf5}
+.sidebar-kicker{font-size:10px;letter-spacing:2px;font-weight:800;color:#6478ef}
+.sidebar-heading strong{font-size:23px;letter-spacing:.3px;color:#17264a}
+.sidebar-heading>span:last-child{font-size:12px;color:#78849a}
+.menu-toggle{display:inline-flex;align-items:center;gap:9px;background:#fff;color:#34435e;border:1px solid #e0e6f0;box-shadow:0 3px 12px #1c31500a;border-radius:13px;padding:10px 13px}
+.menu-toggle span{font-size:12px}
+.menu-close{position:absolute;right:14px;top:15px;width:35px;height:35px;padding:0;background:#f0f3f9;color:#53617a;border:1px solid #e2e7f0;box-shadow:none;font-size:24px}
+.menu-backdrop{position:fixed;z-index:55;inset:0;background:#14213d55;backdrop-filter:blur(3px)}
+#message:not(:empty){background:#fff;border-color:#e0e6f0;color:#34435e;box-shadow:0 8px 24px #20365b0a}
+#editNotice{background:#f0efff;color:#4e4a9a}
+.module-note{border-color:#dce3ef;background:#f8faff;color:#68758c}
+@media(max-width:560px){.workspace-nav{display:flex;grid-template-columns:none}.menu-toggle{padding:9px 11px}.header-pill{display:none}header{gap:10px}.brand-lockup{gap:8px}.brand-mark{flex-shrink:0}}
+@media(prefers-reduced-motion:reduce){.workspace-nav{transition:none}}
+
+  </style>
 </head>
 
 <body>
   <header>
+    <button id="menuToggle" class="menu-toggle hidden" type="button" aria-label="Open navigation" aria-expanded="false">☰ <span>Menu</span></button>
     <div class="brand-lockup">
       <div class="brand-mark">PTY</div>
       <div><h2>PTY-TECH</h2><div class="subbrand">REPAIR INTELLIGENCE · MANAGEMENT SYSTEM</div></div>
@@ -135,7 +185,10 @@ input[type=date]{color-scheme:dark}
         <div class="module-tile"><div class="tile-icon">✓</div><strong id="metricCompleted">—</strong><span>Completed · ပြုပြင်ပြီး</span></div>
         <div class="module-tile"><div class="tile-icon">▤</div><strong id="metricValue">—</strong><span>Estimated Value · ခန့်မှန်းတန်ဖိုး</span></div>
       </div>
-      <nav class="workspace-nav" aria-label="Workspace sections">
+      <div id="menuBackdrop" class="menu-backdrop hidden" aria-hidden="true"></div>
+      <nav class="workspace-nav" id="workspaceNav" aria-label="Workspace sections">
+        <div class="sidebar-heading"><span class="sidebar-kicker">WORKSPACE</span><strong>PTY-TECH</strong><span>Repair Management</span></div>
+        <button type="button" id="menuClose" class="menu-close" aria-label="Close navigation">×</button>
         <a href="#dashboard">◈ Overview · ပင်မ</a>
         <a href="#jobList">▦ Repair Jobs · အလုပ်စာရင်း</a>
         <a href="#historyModule">↻ Status History · မှတ်တမ်း</a>
@@ -327,6 +380,8 @@ input[type=date]{color-scheme:dark}
     }
 
     function showDashboard(signedIn) {
+      document.getElementById("menuToggle")?.classList.toggle("hidden", !signedIn);
+      if (!signedIn) { document.getElementById("workspaceNav")?.classList.remove("is-open"); document.getElementById("menuBackdrop")?.classList.add("hidden"); document.body.style.overflow = ""; }
       loginSection.classList.toggle("hidden", signedIn);
       dashboard.classList.toggle("hidden", !signedIn);
     }
@@ -355,6 +410,25 @@ input[type=date]{color-scheme:dark}
         button.disabled = false;
       }
     }
+
+
+    // Apple-style slide-out workspace navigation
+    const menuToggle = document.getElementById("menuToggle");
+    const workspaceNav = document.getElementById("workspaceNav");
+    const menuBackdrop = document.getElementById("menuBackdrop");
+    const menuClose = document.getElementById("menuClose");
+    function setMenuOpen(open) {
+      if (!workspaceNav || !menuToggle || !menuBackdrop) return;
+      workspaceNav.classList.toggle("is-open", open);
+      menuBackdrop.classList.toggle("hidden", !open);
+      menuToggle.setAttribute("aria-expanded", String(open));
+      document.body.style.overflow = open ? "hidden" : "";
+    }
+    menuToggle?.addEventListener("click", () => setMenuOpen(!workspaceNav?.classList.contains("is-open")));
+    menuClose?.addEventListener("click", () => setMenuOpen(false));
+    menuBackdrop?.addEventListener("click", () => setMenuOpen(false));
+    workspaceNav?.querySelectorAll("a").forEach(link => link.addEventListener("click", () => setMenuOpen(false)));
+    document.addEventListener("keydown", event => { if (event.key === "Escape") setMenuOpen(false); });
 
     async function checkAdmin() {
       const {
