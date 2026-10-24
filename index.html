@@ -433,11 +433,10 @@ input[type=date]{color-scheme:dark}
       const labels = {
         received: "လက်ခံရရှိ",
         diagnosing: "စစ်ဆေးနေဆဲ",
-        in_progress: "ပြုပြင်နေဆဲ",
+        repairing: "ပြုပြင်နေဆဲ",
         waiting_parts: "ပစ္စည်းစောင့်ဆိုင်းနေ",
         completed: "ပြုပြင်ပြီး",
-        ready_for_pickup: "လာရောက်ယူနိုင်ပါပြီ",
-        delivered: "ပစ္စည်းပြန်လည်ပေးအပ်ပြီး",
+                delivered: "ပစ္စည်းပြန်လည်ပေးအပ်ပြီး",
         cancelled: "ပယ်ဖျက်ထား"
       };
       const rows = data || [];
@@ -496,7 +495,7 @@ input[type=date]{color-scheme:dark}
       }
 
       const rows = data || [];
-      const activeStatuses = ["received","diagnosing","in_progress","waiting_parts","ready_for_pickup"];
+      const activeStatuses = ["received","diagnosing","repairing","waiting_parts"];
       const completedCount = rows.filter(job => ["completed","delivered"].includes(job.status)).length;
       const activeCount = rows.filter(job => activeStatuses.includes(job.status)).length;
       const totalEstimate = rows.reduce((sum, job) => sum + (Number(job.estimated_cost) || 0), 0);
@@ -535,11 +534,10 @@ input[type=date]{color-scheme:dark}
         const statusOptions = [
           ["received", "လက်ခံရရှိ"],
           ["diagnosing", "စစ်ဆေးနေဆဲ"],
-          ["in_progress", "ပြုပြင်နေဆဲ"],
+          ["repairing", "ပြုပြင်နေဆဲ"],
           ["waiting_parts", "ပစ္စည်းစောင့်ဆိုင်းနေ"],
           ["completed", "ပြုပြင်ပြီး"],
-          ["ready_for_pickup", "လာရောက်ယူနိုင်ပါပြီ"],
-          ["delivered", "အပ်နှံပြီး"],
+                    ["delivered", "အပ်နှံပြီး"],
           ["cancelled", "ပယ်ဖျက်ထား"]
         ];
 
@@ -638,11 +636,10 @@ input[type=date]{color-scheme:dark}
           const statusLabels = {
             received: "လက်ခံရရှိ",
             diagnosing: "စစ်ဆေးနေဆဲ",
-            in_progress: "ပြုပြင်နေဆဲ",
+            repairing: "ပြုပြင်နေဆဲ",
             waiting_parts: "ပစ္စည်းစောင့်ဆိုင်းနေ",
             completed: "ပြုပြင်ပြီး",
-            ready_for_pickup: "လာရောက်ယူနိုင်ပါပြီ",
-            delivered: "အပ်နှံပြီး",
+                        delivered: "အပ်နှံပြီး",
             cancelled: "ပယ်ဖျက်ထား"
           };
           const statusText = statusLabels[job.status] || job.status || "လက်ခံရရှိ";
