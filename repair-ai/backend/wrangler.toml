@@ -1,0 +1,9 @@
+name = "pty-tech-repair-ai"
+main = "worker.js"
+compatibility_date = "2026-10-28"
+
+[ai]
+binding = "AI"
+
+# Deploy from this directory using Cloudflare Wrangler after signing in.
+# The Worker uses the Cloudflare Workers AI binding; no provider key is placed in frontend code.
