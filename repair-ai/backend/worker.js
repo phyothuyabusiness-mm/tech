@@ -1,6 +1,7 @@
 const ALLOWED_ORIGINS = new Set([
   "https://phyothuyabusiness-mm.github.io",
-  "http://localhost:8788"
+  "http://localhost:8788",
+  "https://appassets.androidplatform.net"
 ]);
 
 function corsHeaders(origin) {
