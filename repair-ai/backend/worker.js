@@ -1,8 +1,7 @@
 const ALLOWED_ORIGINS = new Set([
   "https://phyothuyabusiness-mm.github.io",
   "http://localhost:8788",
-  "https://appassets.androidplatform.net",
-  "null"
+  "https://appassets.androidplatform.net"
 ]);
 
 const MAX_BODY_BYTES = 12 * 1024;
@@ -35,7 +34,7 @@ function json(data, status, origin) {
 }
 
 function originAllowed(origin) {
-  // Native clients and command-line health tests may omit Origin.
+  // Native clients and command-line tests may omit Origin.
   return !origin || ALLOWED_ORIGINS.has(origin);
 }
 
@@ -48,16 +47,11 @@ export default {
     }
 
     if (request.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: corsHeaders(origin)
-      });
+      return new Response(null, { status: 204, headers: corsHeaders(origin) });
     }
-
     if (request.method !== "POST") {
       return json({ error: "Use POST." }, 405, origin);
     }
-
     if (!env.AI || typeof env.AI.run !== "function") {
       return json({ error: "AI backend is not configured." }, 503, origin);
     }
@@ -78,7 +72,6 @@ export default {
     } catch {
       return json({ error: "Could not read request body." }, 400, origin);
     }
-
     if (new TextEncoder().encode(raw).byteLength > MAX_BODY_BYTES) {
       return json({ error: "Request body is too large." }, 413, origin);
     }
@@ -89,14 +82,12 @@ export default {
     } catch {
       return json({ error: "Request body must be valid JSON." }, 400, origin);
     }
-
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return json({ error: "Request body must be a JSON object." }, 400, origin);
     }
 
     const question = typeof body.question === "string" ? body.question.trim() : "";
     const language = body.language === "my" ? "my" : "en";
-
     if (!question) {
       return json({ error: "Question is required." }, 400, origin);
     }
@@ -117,15 +108,12 @@ export default {
         max_tokens: 900,
         temperature: 0.2
       });
-
       const answer = result && (result.response || result.output_text);
       if (typeof answer !== "string" || !answer.trim()) {
         return json({ error: "AI returned an empty response." }, 502, origin);
       }
-
       return json({ answer: answer.trim() }, 200, origin);
     } catch {
-      // Do not expose internal provider/account details to anonymous clients.
       return json({ error: "AI service request failed. Please try again later." }, 502, origin);
     }
   }
