@@ -1,0 +1,14 @@
+{
+  "id": "./",
+  "name": "PTY-TECH Repair AI",
+  "short_name": "PTY Repair AI",
+  "description": "Offline fault diagnosis guides for welding machines, solar inverters and SMPS.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07101d",
+  "theme_color": "#08111f",
+  "orientation": "any",
+  "categories": ["education", "productivity", "utilities"]
+}
