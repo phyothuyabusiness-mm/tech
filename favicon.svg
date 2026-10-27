@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#163e78"/><stop offset="1" stop-color="#061329"/></linearGradient><linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#67e3ff"/><stop offset="1" stop-color="#2684ff"/></linearGradient></defs>
+<rect width="64" height="64" rx="15" fill="url(#bg)"/>
+<path d="M10 16h15l7 7 7-7h15M10 48h15l7-7 7 7h15" fill="none" stroke="#5bbdff" stroke-width="1.5" opacity=".65"/>
+<path d="M32 8l3.2 9.8L45 21l-9.8 3.2L32 34l-3.2-9.8L19 21l9.8-3.2z" fill="url(#blue)"/>
+<text x="32" y="39" font-family="Arial,sans-serif" font-size="15" font-weight="900" text-anchor="middle" fill="#fff">PTY</text>
+<text x="32" y="51" font-family="Arial,sans-serif" font-size="8.5" font-weight="800" letter-spacing=".8" text-anchor="middle" fill="#78d8ff">TECH</text>
+</svg>
